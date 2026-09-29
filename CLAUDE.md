@@ -10,6 +10,10 @@ permission to see.
 
 - **Confluence space** (`NER`): https://nerdocs.atlassian.net/wiki/spaces/NER
   - Software onboarding root: https://nerdocs.atlassian.net/wiki/spaces/NER/pages/5079215
+    (2024-era content; names past leads.)
+  - Per-subteam start-here pages: the `onboarding` field on each subteam in
+    `roster.json` (`start` + optional `faq`). Add one there when a team publishes
+    a maintained onboarding page; `ner-onboard` leads with it.
   - Notable pages referenced from onboarding: Software Contributor Guide,
     Software FAQ, Software Learning Resources, Starter Ticket Instructions.
 - **GitHub org**: https://github.com/Northeastern-Electric-Racing

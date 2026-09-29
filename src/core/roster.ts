@@ -18,10 +18,16 @@ export interface RosterLead {
   role: string;
   name: string;
 }
+/** A subteam's maintained "start here" pages — the first place to send a new member. */
+export interface RosterOnboarding {
+  start: string;
+  faq?: string;
+}
 export interface RosterSubteam {
   name: string;
   head?: string;
   leads?: RosterLead[];
+  onboarding?: RosterOnboarding;
 }
 export interface RosterArea {
   area: string;

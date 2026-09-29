@@ -15,7 +15,7 @@ Into `~/.claude/skills/`, six NER skills:
 
 | skill | what it does |
 |---|---|
-| `ner-onboard` | walks a new member through getting started |
+| `ner-onboard` | walks a new member through getting started — run it as `/ner-onboard` (never auto-loaded) |
 | `ner-ask` | answers NER software questions from Confluence + GitHub |
 | `ner-setup` | environment / dev-setup help |
 | `ner-repo-explainer` | explains what a given NER repo does |

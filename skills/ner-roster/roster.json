@@ -48,7 +48,11 @@
           "leads": [
             { "role": "Argos Lead", "name": "Jeff Kuo" },
             { "role": "NERO Lead", "name": "Dev Chechi" }
-          ]
+          ],
+          "onboarding": {
+            "start": "https://nerdocs.atlassian.net/wiki/spaces/NER/pages/2199420933",
+            "faq": "https://nerdocs.atlassian.net/wiki/spaces/NER/pages/2198863891"
+          }
         },
         {
           "name": "Firmware",
