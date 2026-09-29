@@ -1,4 +1,4 @@
-# ner-jarvis-cli — Project Context
+# ner-jarvis — Project Context
 
 You are answering questions for new (and not-so-new) members of **Northeastern
 Electric Racing**'s software team. Treat the user as a software-team member who
@@ -139,7 +139,7 @@ transitional.)*
 
 ### Issue tracker
 
-GitHub issues on `Northeastern-Electric-Racing/ner-jarvis-cli` via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+GitHub issues on `Northeastern-Electric-Racing/ner-jarvis` via the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

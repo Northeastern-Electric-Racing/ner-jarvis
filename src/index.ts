@@ -8,6 +8,7 @@ import { uninstall } from "./commands/uninstall";
 import { undo } from "./commands/undo";
 import { roster, printRoster } from "./commands/roster";
 import { stale, printStale } from "./commands/stale";
+import { open } from "./commands/open";
 import { printSummary, exitCodeFor } from "./core/report";
 import { autoPrompter, ttyPrompter } from "./core/prompt";
 
@@ -16,6 +17,8 @@ const HELP = `ner-jarvis — configure Claude Code for Northeastern Electric Rac
 Usage:
   ner-jarvis [setup] [name…]     install skills, connect sources, clone the workspace
                                  + open Claude Code (interactive by default on a TTY)
+  ner-jarvis open                clone/refresh the NER context workspace and open
+                                 Claude Code in it
   ner-jarvis update [name…]      re-apply the latest payload (skills + sources)
   ner-jarvis doctor [name…]      read-only health check
   ner-jarvis uninstall [name…]   remove what ner-jarvis installed
@@ -62,6 +65,12 @@ export function run(argv: string[]): number {
       const s = undo({ force: args.force, dryRun: args.dryRun, yes: args.yes, list: args.list }, { prompter, isTTY });
       if (!args.list) printSummary(s);
       return exitCodeFor(s);
+    }
+    case "open": {
+      const prompter = process.stdin.isTTY && !args.yes ? ttyPrompter() : autoPrompter();
+      const r = open(loadPayload(), { dryRun: args.dryRun }, { prompter });
+      for (const m of r.messages) if (!r.ok || args.dryRun) console.log(m);
+      return r.ok ? 0 : 1;
     }
     case "doctor":    { const r = doctor({ targets: args.targets }); printDoctor(r); return r.ok ? 0 : 1; }
     case "roster":    { const r = roster({ targets: args.targets, json: args.json }); printRoster(r); return r.ok ? 0 : 1; }

@@ -1,0 +1,43 @@
+# Publishes context/ to Northeastern-Electric-Racing/ner-jarvis-context as that
+# repo's root (a `git subtree split`), so `ner-jarvis open` can clone just the
+# member workspace. ner-jarvis-context is a read-only mirror — edit context/ here.
+#
+# Needs the CONTEXT_DEPLOY_KEY secret: the private half of a write-enabled
+# deploy key on ner-jarvis-context.
+name: Publish context
+
+on:
+  push:
+    branches: [main]
+    paths: ["context/**", "skills/ner-roster/roster.json"]
+  workflow_dispatch:
+
+concurrency: publish-context
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # subtree split walks the full history
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.2
+
+      - name: Refuse to publish a README that's out of sync with the roster
+        run: bun run sync:context --check
+
+      - name: Split context/ and push it to the mirror
+        env:
+          DEPLOY_KEY: ${{ secrets.CONTEXT_DEPLOY_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/context_key
+          chmod 600 ~/.ssh/context_key
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/context_key -o IdentitiesOnly=yes"
+          sha="$(git subtree split --prefix=context HEAD)"
+          # Fast-forward only: a non-FF means someone pushed to the mirror directly.
+          git push git@github.com:Northeastern-Electric-Racing/ner-jarvis-context.git "$sha:refs/heads/main"

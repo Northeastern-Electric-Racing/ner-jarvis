@@ -29,6 +29,10 @@ jobs:
       - name: Embed payload
         run: bun run embed
 
+      # context/README.md's "Start here" table is generated from roster.json.
+      - name: Check context README is in sync with the roster
+        run: bun run sync:context --check
+
       # --timeout: the default 5s is too tight on windows-latest, where each
       # `claude` spawn costs a few hundred ms and a full setup run makes dozens.
       - name: Test

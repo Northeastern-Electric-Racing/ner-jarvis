@@ -7,7 +7,10 @@ member goes from a fresh `~/.claude` to a working setup in a single step.
 
 > A CLI scoped to App Software, made to accelerate onboarding and surface shared
 > development bugs quickly. The skills it ships live in this repo's
-> [`skills/`](skills/); the CLI embeds them at build time.
+> [`skills/`](skills/); the CLI embeds them at build time. The member workspace
+> lives in [`context/`](context/) and is published to
+> [`ner-jarvis-context`](https://github.com/Northeastern-Electric-Racing/ner-jarvis-context),
+> which `ner-jarvis open` clones.
 
 ## What it installs
 
@@ -63,7 +66,7 @@ Anthropic's official installer.
 case "$(uname -s)" in Darwin) os=darwin;; Linux) os=linux;; *) echo "unsupported"; exit 1;; esac
 case "$(uname -m)" in arm64|aarch64) arch=arm64;; x86_64|amd64) arch=x64;; *) echo "unsupported"; exit 1;; esac
 curl -fsSL -o ner-jarvis \
-  "https://github.com/Northeastern-Electric-Racing/ner-jarvis-cli/releases/latest/download/ner-jarvis-bun-$os-$arch"
+  "https://github.com/Northeastern-Electric-Racing/ner-jarvis/releases/latest/download/ner-jarvis-bun-$os-$arch"
 chmod +x ner-jarvis && ./ner-jarvis
 ```
 
@@ -74,7 +77,7 @@ To keep it on your `PATH` instead of the current folder, swap the last line for
 
 ```powershell
 Invoke-WebRequest -OutFile ner-jarvis.exe `
-  "https://github.com/Northeastern-Electric-Racing/ner-jarvis-cli/releases/latest/download/ner-jarvis-bun-windows-x64.exe"
+  "https://github.com/Northeastern-Electric-Racing/ner-jarvis/releases/latest/download/ner-jarvis-bun-windows-x64.exe"
 .\ner-jarvis.exe
 ```
 
@@ -126,6 +129,7 @@ self-contained.
 ```sh
 ner-jarvis                   # setup: install all skills + connect all sources (default)
 ner-jarvis setup slack       # targeted: act only on the named skill/source
+ner-jarvis open              # clone/refresh the context workspace, open Claude Code in it
 ner-jarvis update            # re-apply the latest embedded payload
 ner-jarvis doctor            # read-only health check (non-zero exit if anything's off)
 ner-jarvis uninstall         # remove only what ner-jarvis installed
@@ -195,6 +199,11 @@ bun test
 - The NER skills live at [`skills/`](skills/) and are **embedded at
   build time** (via `bun run embed`) — there's no runtime fetch.
 - Data sources are declared in [`sources.json`](sources.json).
+- [`context/`](context/) is the member workspace. On push to `main`,
+  `.github/workflows/publish-context.yml` subtree-splits it to
+  `ner-jarvis-context` (a read-only mirror — never commit there). Its README's
+  "Start here" table is generated from each subteam's `onboarding` field in
+  `roster.json`: `bun run sync:context` (CI runs `--check`).
 - [`behavior.md`](behavior.md) is the **language-agnostic contract** — the
   authoritative spec for command surface, wizard steps, state shape,
   reconciliation rules, and exit codes. Read it before porting ner-jarvis to

@@ -14,6 +14,7 @@ import {
   resolveWorkspaceDest,
   workspaceStatus as realWsStatus,
   pullWorkspace as realPull,
+  recordWorkspacePath as realRecord,
   type CloneResult,
   type WorkspaceStatus,
 } from "../core/workspace";
@@ -38,6 +39,7 @@ export interface SetupDeps {
   workspaceStatus?: (dest: string) => WorkspaceStatus;
   pullWorkspace?: (dest: string) => { ok: boolean; error?: string };
   openClaude?: (dir: string) => RunResult;
+  recordWorkspacePath?: (dest: string) => void;
   logDecision?: (event: DecisionEvent) => void;
   addGlobalContext?: () => ContextResult;
   isClaudeAvailable?: () => boolean;
@@ -132,6 +134,7 @@ export function setup(payload: EmbeddedPayload, opts: SetupOpts, deps: SetupDeps
   const cloneFn = deps.cloneWorkspace ?? realClone;
   const wsStatusFn = deps.workspaceStatus ?? realWsStatus;
   const pullFn = deps.pullWorkspace ?? realPull;
+  const recordFn = deps.recordWorkspacePath ?? realRecord;
   const openFn = deps.openClaude ?? realOpen;
   const addContext = deps.addGlobalContext ?? realAddContext;
   const cwd = deps.cwd ?? process.cwd();
@@ -331,6 +334,7 @@ export function setup(payload: EmbeddedPayload, opts: SetupOpts, deps: SetupDeps
       // Offer to open Claude Code whenever there's a usable workspace dir — freshly
       // cloned OR already present. Only a hard clone failure leaves nothing to open.
       if (haveDir) {
+        recordFn(dest);
         const openAns = prompter.confirm(`Open Claude Code in ${dest}?`);
         log({ event: "prompt", step: "open", answer: openAns ? "yes" : "no" });
         if (openAns) {

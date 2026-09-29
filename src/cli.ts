@@ -1,6 +1,6 @@
 import type { ParsedArgs } from "./types";
 
-const KNOWN_COMMANDS = new Set(["setup", "update", "doctor", "uninstall", "undo", "roster", "stale"]);
+const KNOWN_COMMANDS = new Set(["setup", "update", "doctor", "uninstall", "undo", "roster", "stale", "open"]);
 
 export function parseArgs(argv: string[]): ParsedArgs {
   let command: ParsedArgs["command"] = "setup";

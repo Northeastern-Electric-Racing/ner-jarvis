@@ -15,6 +15,7 @@
   "scripts": {
     "test": "bun test --timeout 30000",
     "embed": "bun run scripts/embed-payload.ts",
+    "sync:context": "bun run scripts/sync-start-here.ts",
     "build:binary": "bun run scripts/build.ts binary",
     "build:npm": "bun run scripts/build.ts npm"
   },

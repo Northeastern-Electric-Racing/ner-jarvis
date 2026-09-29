@@ -1,7 +1,8 @@
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { baseCmd, type RunResult } from "./claude";
+import { workspaceFile } from "./paths";
 
 export interface CloneResult {
   ok: boolean;
@@ -13,6 +14,22 @@ export interface CloneResult {
 /** Where the workspace repo lands: `<baseDir>/<dirName>`. Pure. */
 export function resolveWorkspaceDest(baseDir: string, dirName: string): string {
   return join(baseDir, dirName);
+}
+
+/** The workspace path setup/open last recorded, or `undefined`. Never throws. */
+export function readWorkspacePath(): string | undefined {
+  try {
+    const dest = JSON.parse(readFileSync(workspaceFile(), "utf8"))?.dest;
+    return typeof dest === "string" && dest.length > 0 ? dest : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Remember where the workspace lives so `ner-jarvis open` can find it again. */
+export function recordWorkspacePath(dest: string): void {
+  mkdirSync(dirname(workspaceFile()), { recursive: true });
+  writeFileSync(workspaceFile(), JSON.stringify({ dest }, null, 2) + "\n");
 }
 
 /**
