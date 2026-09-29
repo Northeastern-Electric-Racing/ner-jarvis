@@ -9,6 +9,10 @@ which resolve people, repos, and docs live, so nothing checked in here can go st
 - For anything NER — onboarding, dev-environment setup, understanding a repo or its
   code, conventions/docs, who owns what, how to escalate — reach for the NER skills
   rather than answering from memory, and resolve people/ownership **live**.
+- New members: point them to their team's start-here and FAQ pages before answering
+  from scratch. Those pages are listed in the "Start here" table in `README.md` and in
+  the `onboarding` field of each subteam in the roster. For a guided walkthrough, tell
+  them to run `/ner-onboard` (it's user-invoked only).
 - Use the `gh` CLI for GitHub.
 - NER's Confluence is mid-restructure. When a page reads as current but acting on it
   would be wrong, record it with **ner-flag-stale**. A doc describing how something
