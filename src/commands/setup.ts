@@ -17,7 +17,8 @@ import {
   type CloneResult,
   type WorkspaceStatus,
 } from "../core/workspace";
-import { mcpListText, mcpServerStatus, type RunResult } from "../core/claude";
+import { isClaudeAvailable as realHasClaude, mcpListText, mcpServerStatus, type RunResult } from "../core/claude";
+import { installClaudeCode as realInstallClaude, installerCommand, type InstallClaudeResult } from "../core/bootstrap";
 import { logDecision as realLog, type DecisionEvent } from "../core/log";
 import { addGlobalContext as realAddContext, globalContextStatus, type ContextResult } from "../core/context";
 import { globalContextFile } from "../core/paths";
@@ -39,6 +40,8 @@ export interface SetupDeps {
   openClaude?: (dir: string) => RunResult;
   logDecision?: (event: DecisionEvent) => void;
   addGlobalContext?: () => ContextResult;
+  isClaudeAvailable?: () => boolean;
+  installClaude?: () => InstallClaudeResult;
   cwd?: string;
   isTTY?: boolean;
 }
@@ -139,6 +142,27 @@ export function setup(payload: EmbeddedPayload, opts: SetupOpts, deps: SetupDeps
   const mode = minimal ? "minimal" : opts.yes ? "assume-yes" : "interactive";
   // `--yes` and `--dry-run` never block on input; both use the auto (all-default) prompter.
   const prompter: Prompter = opts.yes || opts.dryRun ? autoPrompter() : (deps.prompter ?? autoPrompter());
+
+  // Missing Claude Code → offer to install it (interactive / --yes only; minimal mode
+  // never runs a network installer unattended). Declining or a failed install falls
+  // through to preflight, which reports it exactly as before.
+  const hasClaude = deps.isClaudeAvailable ?? realHasClaude;
+  if (!minimal && !hasClaude()) {
+    const cmd = installerCommand().display;
+    console.log(`\nClaude Code (\`claude\`) isn't installed. Anthropic's official installer:\n  ${cmd}`);
+    if (opts.dryRun) {
+      console.log("[dry-run] would run it, then continue setup.");
+    } else {
+      const ans = prompter.confirm("Install Claude Code now?");
+      log({ event: "prompt", step: "install-claude", answer: ans ? "yes" : "no" });
+      if (ans) {
+        const r = (deps.installClaude ?? realInstallClaude)();
+        log({ event: "step", step: "install-claude", outcome: r.ok ? "ok" : "failed" });
+        if (r.ok) console.log("✓ Claude Code installed (if the installer printed a PATH hint above, run it so `claude` works in new terminals)");
+        else console.error(`✗ ${r.error}`);
+      }
+    }
+  }
 
   const pf = preflight();
   if (!pf.ok) {

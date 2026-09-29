@@ -169,6 +169,14 @@ sources (slack, atlassian) authenticate on first use.
 
 Steps (each gated by a confirm in interactive mode; auto-yes under `--yes`):
 
+0. **Install Claude Code** (interactive / `--yes` only; only if `claude` isn't
+   runnable) — "Install Claude Code now?" → run Anthropic's official native
+   installer (`curl -fsSL https://claude.ai/install.sh | bash`; on Windows
+   `irm https://claude.ai/install.ps1 | iex`) with inherited stdio, then prepend
+   `~/.local/bin` to this process's PATH so the rest of the run finds `claude`.
+   Minimal mode and `--dry-run` never run it. Declining or a failed install falls
+   through to preflight. Claude Code is the host, not an item ner-jarvis owns: it is
+   **not** journaled for undo and `uninstall` never removes it.
 1. **Preflight** — require `claude` and `git` on PATH and `~/.claude` writable;
    stop with a non-zero exit and guidance on failure. Not prompted.
 2. **Install skills** — "Install N NER skills into `~/.claude/skills/`?" → copy each

@@ -13,7 +13,7 @@ function isGitAvailable(): boolean {
 export function preflight(): PreflightResult {
   const problems: string[] = [];
   if (!isClaudeAvailable()) {
-    problems.push("Claude Code CLI (`claude`) was not found on your PATH. Install Claude Code, then re-run: https://docs.claude.com/en/docs/claude-code");
+    problems.push("Claude Code CLI (`claude`) was not found on your PATH. Run `ner-jarvis setup` in a terminal to have it installed for you, or install it yourself (https://docs.claude.com/en/docs/claude-code) and re-run.");
   }
   if (!isGitAvailable()) {
     problems.push("`git` was not found on your PATH. Install git, then re-run.");

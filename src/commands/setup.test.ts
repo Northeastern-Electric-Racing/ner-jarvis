@@ -1,4 +1,4 @@
-import { test, expect, beforeAll, afterAll, beforeEach, afterEach } from "bun:test";
+import { test, expect, describe, beforeAll, afterAll, beforeEach, afterEach } from "bun:test";
 import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -422,5 +422,61 @@ test("re-run with the global note already present: reports up-to-date, no global
     const events = readFileSync(logFile(), "utf8").trim().split("\n").map((l) => JSON.parse(l));
     expect(events.some((e) => e.event === "step" && e.step === "global-context" && e.outcome === "up-to-date")).toBe(true);
     expect(events.some((e) => e.event === "prompt" && e.step === "global-context")).toBe(false);
+  });
+});
+
+// Missing Claude Code: interactive / --yes offer the official installer; minimal and
+// dry-run never run it. The fake installer "installs" by pointing the bin at the shim.
+describe("setup: installing Claude Code when it's missing", () => {
+  const opts = { targets: ["ner-ask"], force: false, dryRun: false, yes: false };
+  const fakeInstall = (calls: number[]) => () => {
+    calls.push(1);
+    process.env.NER_JARVIS_CLAUDE_BIN = `bun "${shimPath}"`;
+    return { ok: true };
+  };
+  beforeEach(() => { process.env.NER_JARVIS_CLAUDE_BIN = "/nonexistent/nope"; });
+
+  test("interactive: accepting installs it, then setup continues", () => {
+    withTempEnv(() => {
+      const calls: number[] = [];
+      const summary = setup(fixturePayload(), opts, { prompter: scriptedPrompter([""]), isTTY: true, installClaude: fakeInstall(calls) });
+      expect(calls.length).toBe(1);
+      expect(summary.failures).toEqual([]);
+      expect(readState()!.skills.map(s => s.name)).toEqual(["ner-ask"]);
+    });
+  });
+
+  test("interactive: declining skips the install and preflight fails as before", () => {
+    withTempEnv(() => {
+      const calls: number[] = [];
+      const summary = setup(fixturePayload(), opts, { prompter: scriptedPrompter(["n"]), isTTY: true, installClaude: fakeInstall(calls) });
+      expect(calls.length).toBe(0);
+      expect(summary.failures.some(f => /claude/i.test(f.error))).toBe(true);
+    });
+  });
+
+  test("--yes installs without prompting", () => {
+    withTempEnv(() => {
+      const calls: number[] = [];
+      const summary = setup(fixturePayload(), { ...opts, yes: true }, { prompter: throwingPrompter, installClaude: fakeInstall(calls) });
+      expect(calls.length).toBe(1);
+      expect(summary.failures).toEqual([]);
+    });
+  });
+
+  test("a failed install falls through to the preflight failure", () => {
+    withTempEnv(() => {
+      const summary = setup(fixturePayload(), { ...opts, yes: true }, { installClaude: () => ({ ok: false, error: "boom" }) });
+      expect(summary.failures.some(f => /claude/i.test(f.error))).toBe(true);
+    });
+  });
+
+  test("minimal (no TTY, no --yes) and --dry-run never run the installer", () => {
+    withTempEnv(() => {
+      const calls: number[] = [];
+      setup(fixturePayload(), opts, { prompter: throwingPrompter, installClaude: fakeInstall(calls) });
+      setup(fixturePayload(), { ...opts, dryRun: true }, { prompter: throwingPrompter, isTTY: true, installClaude: fakeInstall(calls) });
+      expect(calls.length).toBe(0);
+    });
   });
 });
