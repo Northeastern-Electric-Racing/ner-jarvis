@@ -35,3 +35,8 @@ test("withTable replaces only the marked block and is idempotent", () => {
 test("withTable throws when the markers are missing", () => {
   expect(() => withTable("# no markers\n", "NEW")).toThrow();
 });
+
+test("withTable keeps CRLF line endings (Windows checkout)", () => {
+  const readme = `# hi\r\n${BEGIN}\r\nold\r\n${END}\r\n`;
+  expect(withTable(readme, "a\nb")).toBe(`# hi\r\n${BEGIN}\r\na\r\nb\r\n${END}\r\n`);
+});

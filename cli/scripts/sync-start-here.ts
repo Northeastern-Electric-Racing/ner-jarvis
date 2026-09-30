@@ -33,12 +33,17 @@ export function renderTable(roster: RosterDoc): string {
   return ["| Team | Onboarding | FAQ |", "|---|---|---|", ...rows].join("\n");
 }
 
-/** Pure: `readme` with the marked block replaced. Throws if the markers are missing. */
+/**
+ * Pure: `readme` with the marked block replaced, keeping the file's own line endings
+ * (a Windows checkout has CRLF). Throws if the markers are missing.
+ */
 export function withTable(readme: string, table: string): string {
   const begin = readme.indexOf(BEGIN);
   const end = readme.indexOf(END);
   if (begin === -1 || end < begin) throw new Error("context/README.md is missing the start-here markers");
-  return `${readme.slice(0, begin + BEGIN.length)}\n${table}\n${readme.slice(end)}`;
+  const eol = readme.includes("\r\n") ? "\r\n" : "\n";
+  const block = table.split("\n").join(eol);
+  return `${readme.slice(0, begin + BEGIN.length)}${eol}${block}${eol}${readme.slice(end)}`;
 }
 
 if (import.meta.main) {
