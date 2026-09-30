@@ -1,5 +1,6 @@
 /**
- * Build-time script: walks the repo's `skills/`, reads `sources.json`
+ * Build-time script: walks `context/skills/` (the member-facing context the CLI
+ * installs), reads `cli/sources.json`
  * and the `package.json` version, and writes `src/payload.generated.ts`
  * with the whole payload inlined as a JSON literal so it compiles into the
  * standalone binary. `node:` builtins only — Bun is just the runner.
@@ -15,11 +16,11 @@ import type {
   Workspace,
 } from "../src/types";
 
-// scripts/embed-payload.ts -> scripts -> repo root. The CLI is the repo, so the
-// payload (`skills/`, `sources.json`) and the package live at the same level.
+// cli/scripts/embed-payload.ts -> cli/ -> repo root. The skills live in the
+// sibling `context/` folder; `sources.json` and the package live in `cli/`.
 const scriptDir = fileURLToPath(new URL(".", import.meta.url));
-const repoRoot = join(scriptDir, "..");
-const cliDir = repoRoot;
+const cliDir = join(scriptDir, "..");
+const repoRoot = join(cliDir, "..");
 
 /** Recursively collect every file under `dir`, keyed by path relative to `base`. */
 function collectFiles(dir: string, base: string): { path: string; contents: string }[] {
@@ -39,7 +40,7 @@ function collectFiles(dir: string, base: string): { path: string; contents: stri
 }
 
 function readSkills(): EmbeddedSkill[] {
-  const skillsRoot = join(repoRoot, "skills");
+  const skillsRoot = join(repoRoot, "context", "skills");
   const skills: EmbeddedSkill[] = [];
   for (const entry of readdirSync(skillsRoot, { withFileTypes: true })) {
     // Only directories at the top level are skills; ignore stray files.
@@ -56,7 +57,7 @@ function readSkills(): EmbeddedSkill[] {
 }
 
 function readSources(): { marketplaces: Marketplace[]; sources: Source[]; workspace?: Workspace } {
-  const raw = readFileSync(join(repoRoot, "sources.json"), "utf8");
+  const raw = readFileSync(join(cliDir, "sources.json"), "utf8");
   const parsed = JSON.parse(raw) as { marketplaces: Marketplace[]; sources: Source[]; workspace?: Workspace };
   return { marketplaces: parsed.marketplaces, sources: parsed.sources, workspace: parsed.workspace };
 }

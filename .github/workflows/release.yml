@@ -14,6 +14,9 @@ on:
 
 jobs:
   binaries:
+    defaults:
+      run:
+        working-directory: cli
     strategy:
       fail-fast: false
       # Serialized on purpose. All five jobs upload to the SAME release, and
@@ -81,9 +84,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           fail_on_unmatched_files: true
-          files: dist/ner-jarvis-${{ matrix.target }}*
+          files: cli/dist/ner-jarvis-${{ matrix.target }}*
 
   npm:
+    defaults:
+      run:
+        working-directory: cli
     runs-on: ubuntu-latest
     # `secrets` is not available in a job-level `if`, so gate the publish steps on an
     # env flag instead. Without NPM_TOKEN the job reports the skip and stays green:

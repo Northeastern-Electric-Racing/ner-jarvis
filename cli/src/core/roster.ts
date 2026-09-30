@@ -4,7 +4,7 @@ import { skillsDir } from "./paths";
 import { loadPayload } from "./payload";
 
 /**
- * The NER leadership roster (`skills/ner-roster/roster.json`) is the grounding
+ * The NER leadership roster (`context/skills/ner-roster/roster.json`) is the grounding
  * truth for org STRUCTURE and nominal ownership. It ships as a data-only skill
  * dir, landing at `~/.claude/skills/ner-roster/roster.json`, where the NER
  * skills read it directly.

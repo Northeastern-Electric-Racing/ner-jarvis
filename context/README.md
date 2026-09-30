@@ -8,8 +8,10 @@ the software team. `ner-jarvis open` clones this repo and opens Claude Code here
 > [`context/`](https://github.com/Northeastern-Electric-Racing/ner-jarvis/tree/main/context)
 > folder of `ner-jarvis`. Open PRs there, not here.
 
-It stays minimal on purpose: the skills resolve people, repos, and docs live, so
-nothing here can go stale. Claude's instructions are in [`CLAUDE.md`](CLAUDE.md).
+Everything Claude needs to answer NER questions is here: its instructions in
+[`CLAUDE.md`](CLAUDE.md) and the NER [`skills/`](skills/) (which `ner-jarvis setup`
+installs). The skills resolve people, repos, and docs live, so nothing here can go
+stale.
 
 ## Start here
 

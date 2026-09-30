@@ -17,12 +17,12 @@ in NER's live Confluence and GitHub. Built for **Claude Desktop**.
 All six are **pointer-only**: they tell Claude *where to look* (Confluence +
 GitHub) and *how to answer* (ground every claim, cite or decline), and never
 hard-code facts that go stale — leads, repo lists, version numbers. See
-`../CONTEXT.md` and `../docs/adr/` for the why.
+[`cli/CONTEXT.md`](https://github.com/Northeastern-Electric-Racing/ner-jarvis/blob/main/cli/CONTEXT.md) and [`cli/docs/adr/`](https://github.com/Northeastern-Electric-Racing/ner-jarvis/tree/main/cli/docs/adr) for the why.
 
 ## Install (Claude Desktop)
 
 These install one at a time through the Claude Desktop UI — there is no
-one-click installer (see `../docs/adr/0002-manual-connectors-over-mcp-remote.md`
+one-click installer (see [`cli/docs/adr/0002-manual-connectors-over-mcp-remote.md`](https://github.com/Northeastern-Electric-Racing/ner-jarvis/blob/main/cli/docs/adr/0002-manual-connectors-over-mcp-remote.md)
 for the Connector side; the Skills upload is manual for the same reasons).
 
 1. Get the ZIPs: download from the repo's Releases, or build them yourself with

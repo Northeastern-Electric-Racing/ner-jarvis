@@ -57,8 +57,8 @@ Named lookups (sub-verbs):
 
 Add `--json` to any of the above for machine-readable output.
 
-Under the hood these map to a small, pure query API in the `ner-jarvis-cli` repo,
-`src/core/roster.ts` (`heads`, `headOf`, `leadsOf`, `inArea`, `inSubteam`,
+Under the hood these map to a small, pure query API in the `ner-jarvis` repo,
+`cli/src/core/roster.ts` (`heads`, `headOf`, `leadsOf`, `inArea`, `inSubteam`,
 `byRole`, `byPerson`, `systems`, `systemOwners`, `chiefOf`), which flattens the
 tree to rows
 (`area, subteam, role, name`) — plain JSON, no database, identical behavior on

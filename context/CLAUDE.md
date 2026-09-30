@@ -1,8 +1,9 @@
 # NER onboarding workspace
 
-Home base for a new Northeastern Electric Racing (NER) software member. This repo is
-intentionally near-empty — the real knowledge lives in the installed **NER skills**,
-which resolve people, repos, and docs live, so nothing checked in here can go stale.
+Home base for a new Northeastern Electric Racing (NER) software member. The real
+knowledge lives in the **NER skills** (source in `skills/`, installed to
+`~/.claude/skills/` by `ner-jarvis setup`), which resolve people, repos, and docs
+live, so nothing checked in here can go stale.
 
 ## Rules
 

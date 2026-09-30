@@ -1,6 +1,6 @@
 /**
  * Regenerates the "Start here" table in context/README.md from
- * skills/ner-roster/roster.json: every subteam with an `onboarding` entry gets a
+ * context/skills/ner-roster/roster.json: every subteam with an `onboarding` entry gets a
  * row. Teams add their pages to the roster, never to the README by hand.
  *
  *   bun run sync:context           # rewrite context/README.md in place
@@ -16,8 +16,9 @@ import type { RosterDoc } from "../src/core/roster";
 export const BEGIN = "<!-- start-here:begin (generated from roster.json — edit there) -->";
 export const END = "<!-- start-here:end -->";
 
-const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..");
-const ROSTER = join(repoRoot, "skills", "ner-roster", "roster.json");
+// cli/scripts/ -> cli/ -> repo root
+const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..", "..");
+const ROSTER = join(repoRoot, "context", "skills", "ner-roster", "roster.json");
 const README = join(repoRoot, "context", "README.md");
 
 /** Pure: the markdown table for every subteam that declares onboarding pages. */

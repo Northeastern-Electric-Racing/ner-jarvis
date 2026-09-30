@@ -6,11 +6,12 @@
 member goes from a fresh `~/.claude` to a working setup in a single step.
 
 > A CLI scoped to App Software, made to accelerate onboarding and surface shared
-> development bugs quickly. The skills it ships live in this repo's
-> [`skills/`](skills/); the CLI embeds them at build time. The member workspace
-> lives in [`context/`](context/) and is published to
-> [`ner-jarvis-context`](https://github.com/Northeastern-Electric-Racing/ner-jarvis-context),
-> which `ner-jarvis open` clones.
+> development bugs quickly.
+
+| Folder | What's in it |
+|---|---|
+| [`context/`](context/) | Everything a member needs to ask questions about NER: `CLAUDE.md`, the NER [`skills/`](context/skills/) (including the roster), and the "Start here" README. Published as [`ner-jarvis-context`](https://github.com/Northeastern-Electric-Racing/ner-jarvis-context), which `ner-jarvis open` clones. |
+| [`cli/`](cli/) | The `ner-jarvis` installer. Its build embeds `context/skills/`. |
 
 ## What it installs
 
@@ -191,20 +192,20 @@ or unhealthy.
 ## Development
 
 ```sh
+cd cli
 bun install
-bun run embed    # regenerate the embedded payload from skills/ + sources.json
+bun run embed    # regenerate the embedded payload from ../context/skills + sources.json
 bun test
 ```
 
-- The NER skills live at [`skills/`](skills/) and are **embedded at
-  build time** (via `bun run embed`) — there's no runtime fetch.
-- Data sources are declared in [`sources.json`](sources.json).
-- [`context/`](context/) is the member workspace. On push to `main`,
-  `.github/workflows/publish-context.yml` subtree-splits it to
-  `ner-jarvis-context` (a read-only mirror — never commit there). Its README's
-  "Start here" table is generated from each subteam's `onboarding` field in
-  `roster.json`: `bun run sync:context` (CI runs `--check`).
-- [`behavior.md`](behavior.md) is the **language-agnostic contract** — the
+- The NER skills live at [`context/skills/`](context/skills/) and are **embedded
+  at build time** (via `bun run embed`) — there's no runtime fetch.
+- Data sources are declared in [`cli/sources.json`](cli/sources.json).
+- On push to `main`, `.github/workflows/publish-context.yml` subtree-splits
+  `context/` to `ner-jarvis-context` (a read-only mirror — never commit there).
+  Its README's "Start here" table is generated from each subteam's `onboarding`
+  field in `roster.json`: `bun run sync:context` in `cli/` (CI runs `--check`).
+- [`cli/behavior.md`](cli/behavior.md) is the **language-agnostic contract** — the
   authoritative spec for command surface, wizard steps, state shape,
   reconciliation rules, and exit codes. Read it before porting ner-jarvis to
   another runtime.

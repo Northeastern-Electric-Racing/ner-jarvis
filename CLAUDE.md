@@ -24,7 +24,7 @@ in answers.
 
 ## Org & escalation
 
-**Ground org structure in `skills/ner-roster/roster.json`** (asOf **Fall 2026** —
+**Ground org structure in `context/skills/ner-roster/roster.json`** (asOf **Fall 2026** —
 the authoritative source for area → subteam → head/leads; query it directly or via
 `ner-jarvis roster heads` / `roster leads <subteam>`). Leadership rotates by
 academic year and even the newest Confluence rosters lag reality, so treat the
@@ -139,31 +139,34 @@ transitional.)*
 
 ### Issue tracker
 
-GitHub issues on `Northeastern-Electric-Racing/ner-jarvis` via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+GitHub issues on `Northeastern-Electric-Racing/ner-jarvis` via the `gh` CLI. See `cli/docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
-Canonical names: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+Canonical names: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `cli/docs/agents/triage-labels.md`.
 
 ### Domain docs
 
-Single-context — one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+Single-context — one `cli/CONTEXT.md` + `cli/docs/adr/`. See `cli/docs/agents/domain.md`.
 
 ## ner-jarvis CLI (installer)
 
-**This repo is the CLI** — `package.json`, `src/`, `scripts/`, and `test/` sit at
-the root. **ner-jarvis** is a cross-platform installer that configures Claude Code
+**Two folders, one repo.** `cli/` is the installer (`package.json`, `src/`,
+`scripts/`, `test/`, `sources.json`, `behavior.md`, `docs/`). `context/` is
+everything a member needs to ask questions about NER — its `CLAUDE.md`, `README.md`,
+and the NER `skills/` (including `ner-roster/roster.json`). The CLI build pulls the
+skills from `context/`; nothing member-facing lives in `cli/`. **ner-jarvis** is a cross-platform installer that configures Claude Code
 for a new NER software member in one command: it installs the six NER skills
 into `~/.claude/skills/`, installs the Slack + Atlassian plugins (GitHub is
 accessed via the `gh` CLI — checked and guided, never installed by us), then
 clones the lean onboarding workspace and opens Claude Code in it. Built with Bun
 (`node:` builtins only) into a standalone binary + npx bundle.
 
-- **Payload it ships:** this repo's own `skills/` + `sources.json`, embedded at
-  build time via `bun run embed` (regenerates the git-ignored
-  `src/payload.generated.ts`). `skills/` is the canonical copy; the repo's
-  `.claude/skills/` is an unrelated local dev-skill set, not shipped.
-- **Contract:** `behavior.md` is the language-agnostic spec (command surface,
+- **Payload it ships:** `context/skills/` + `cli/sources.json`, embedded at
+  build time via `bun run embed` in `cli/` (regenerates the git-ignored
+  `cli/src/payload.generated.ts`). `context/skills/` is the canonical copy; the
+  root `.claude/skills/` is an unrelated local dev-skill set, not shipped.
+- **Contract:** `cli/behavior.md` is the language-agnostic spec (command surface,
   setup wizard, state file, reconciliation, exit codes) — authoritative.
 - **Versioning/undo:** every persisted shape is versioned + migration-governed
   (a schema-snapshot guard fails CI on any un-migrated change); state carries a
@@ -177,16 +180,18 @@ clones the lean onboarding workspace and opens Claude Code in it. Built with Bun
   (npm) — so the current binary never parses an old version's records. Archived
   binaries are GC'd once a version's runs are all undone; a full `uninstall` clears
   the journal + archives (keeping the decision log).
-- **Workspace repo:** the CLI clones `Northeastern-Electric-Racing/ner-jarvis-context`
-  (**public** — mostly empty, just a `CLAUDE.md`) into a directory the onboardee
-  chooses, as the folder their Claude Code runs in. It is kept public on purpose:
+- **Workspace repo:** `Northeastern-Electric-Racing/ner-jarvis-context` is a
+  read-only mirror of `context/`, published on every push to `main` by
+  `.github/workflows/publish-context.yml` (`git subtree split --prefix=context`,
+  pushed with the `CONTEXT_DEPLOY_KEY` deploy key). `ner-jarvis open` / `setup`
+  clone it (**public**) into a directory the onboardee chooses, as the folder their Claude Code runs in. It is kept public on purpose:
   setup ends in a plain `git clone`, so a day-one member who is not in the org yet
   would otherwise fail at the last step.
-- **Dev:** `bun install && bun run embed && bun test` (267 tests). See `README.md`.
-- **Three repos, don't conflate them:** this repo (the CLI + the `skills/`
-  source); `Northeastern-Electric-Racing/ner-jarvis-context` (**public**, 3 files —
-  the lean workspace the CLI *clones onto a member's machine*, not a copy of this
-  repo); and `bracyw/ner-onboarding-agent` (**the former home** — v0.1.0's release
+- **Dev:** `cd cli && bun install && bun run embed && bun test`. See `README.md`.
+- **Three repos, don't conflate them:** this repo (`ner-jarvis`, formerly
+  `ner-jarvis-cli` — `cli/` + `context/`); `Northeastern-Electric-Racing/ner-jarvis-context`
+  (**public** — the published copy of `context/` that the CLI *clones onto a member's
+  machine*; never commit there); and `bracyw/ner-onboarding-agent` (**the former home** — v0.1.0's release
   assets still live there, as does the retired Claude-Desktop ZIP pipeline).
   `bracyw/ner-jarvis` is the workspace's **predecessor**: deliberately left in place,
   because v0.1.0's released binaries have that URL embedded and cannot be retargeted.

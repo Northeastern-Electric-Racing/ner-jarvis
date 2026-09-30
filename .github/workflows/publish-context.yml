@@ -9,7 +9,7 @@ name: Publish context
 on:
   push:
     branches: [main]
-    paths: ["context/**", "skills/ner-roster/roster.json"]
+    paths: ["context/**"]
   workflow_dispatch:
 
 concurrency: publish-context
@@ -27,6 +27,7 @@ jobs:
           bun-version: 1.3.2
 
       - name: Refuse to publish a README that's out of sync with the roster
+        working-directory: cli
         run: bun run sync:context --check
 
       - name: Split context/ and push it to the mirror
