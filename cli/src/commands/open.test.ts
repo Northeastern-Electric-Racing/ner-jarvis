@@ -1,4 +1,5 @@
 import { test, expect } from "bun:test";
+import { join } from "node:path";
 import { open, type OpenDeps } from "./open";
 import type { EmbeddedPayload } from "../types";
 import type { WorkspaceStatus } from "../core/workspace";
@@ -35,9 +36,10 @@ test("no recorded path: asks where, clones, records, opens", () => {
   });
   const r = open(payload, { dryRun: false }, deps);
   expect(r.ok).toBe(true);
-  expect(calls.clone).toEqual(["/home/me/ner-jarvis-context"]);
-  expect(calls.record).toEqual(["/home/me/ner-jarvis-context"]);
-  expect(calls.open).toEqual(["/home/me/ner-jarvis-context"]);
+  const dest = join("/home/me", "ner-jarvis-context"); // platform separator
+  expect(calls.clone).toEqual([dest]);
+  expect(calls.record).toEqual([dest]);
+  expect(calls.open).toEqual([dest]);
 });
 
 test("recorded + behind-clean: fast-forwards without prompting, then opens", () => {
