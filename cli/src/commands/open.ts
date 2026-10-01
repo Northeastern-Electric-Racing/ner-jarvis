@@ -3,18 +3,18 @@ import type { EmbeddedPayload } from "../types";
 import { autoPrompter, type Prompter } from "../core/prompt";
 import { type RunResult } from "../core/claude";
 import {
-  cloneContextRepo as realClone,
+  cloneContextWorkspace as realClone,
   openClaude as realOpen,
-  pullContextRepo as realPull,
-  readContextRepoPath as realReadPath,
-  recordContextRepoPath as realRecord,
+  pullContextWorkspace as realPull,
+  readContextWorkspacePath as realReadPath,
+  recordContextWorkspacePath as realRecord,
   repoSlug,
-  resolveContextRepoDest,
-  contextRepoOrigin as realOrigin,
-  contextRepoStatus as realWsStatus,
+  resolveContextWorkspaceDest,
+  contextWorkspaceOrigin as realOrigin,
+  contextWorkspaceStatus as realWsStatus,
   type CloneResult,
-  type ContextRepoStatus,
-} from "../core/context-repo";
+  type ContextWorkspaceStatus,
+} from "../core/context-workspace";
 
 export interface OpenOpts {
   dryRun: boolean;
@@ -23,13 +23,13 @@ export interface OpenOpts {
 /** Side-effecting collaborators, injectable for tests. Real defaults used in prod. */
 export interface OpenDeps {
   prompter?: Prompter;
-  cloneContextRepo?: (repo: string, dest: string, branch?: string) => CloneResult;
-  contextRepoStatus?: (dest: string) => ContextRepoStatus;
-  pullContextRepo?: (dest: string) => { ok: boolean; error?: string };
+  cloneContextWorkspace?: (repo: string, dest: string, branch?: string) => CloneResult;
+  contextWorkspaceStatus?: (dest: string) => ContextWorkspaceStatus;
+  pullContextWorkspace?: (dest: string) => { ok: boolean; error?: string };
   openClaude?: (dir: string) => RunResult;
-  readContextRepoPath?: () => string | undefined;
-  contextRepoOrigin?: (dest: string) => string | undefined;
-  recordContextRepoPath?: (dest: string) => void;
+  readContextWorkspacePath?: () => string | undefined;
+  contextWorkspaceOrigin?: (dest: string) => string | undefined;
+  recordContextWorkspacePath?: (dest: string) => void;
   cwd?: string;
 }
 
@@ -40,28 +40,28 @@ export interface OpenResult {
 }
 
 /**
- * `ner-jarvis open`: get the member into the context repo in one step. Finds
- * the context repo setup recorded (or asks where to put it), clones it if missing,
+ * `ner-jarvis open`: get the member into the context workspace in one step. Finds
+ * the context workspace setup recorded (or asks where to put it), clones it if missing,
  * fast-forwards it when that's safe (behind origin AND clean — `--ff-only`, so local
  * work is never touched), then launches Claude Code there. Any other git state is
- * reported and the context repo is opened as-is.
+ * reported and the context workspace is opened as-is.
  */
 export function open(payload: EmbeddedPayload, opts: OpenOpts, deps: OpenDeps = {}): OpenResult {
-  const ws = payload.contextRepo;
-  if (!ws) return { ok: false, messages: ["this build declares no context repo to open"] };
+  const ws = payload.contextWorkspace;
+  if (!ws) return { ok: false, messages: ["this build declares no context workspace to open"] };
 
   const prompter = deps.prompter ?? autoPrompter();
   const messages: string[] = [];
-  let recorded = (deps.readContextRepoPath ?? realReadPath)();
+  let recorded = (deps.readContextWorkspacePath ?? realReadPath)();
   // A recorded clone of a different repo (the retired ner-jarvis-context mirror) has unrelated
-  // history, so it can't be pulled forward: leave it alone and clone the current context repo beside it.
-  const origin = recorded ? (deps.contextRepoOrigin ?? realOrigin)(recorded) : undefined;
+  // history, so it can't be pulled forward: leave it alone and clone the current context workspace beside it.
+  const origin = recorded ? (deps.contextWorkspaceOrigin ?? realOrigin)(recorded) : undefined;
   if (recorded && origin && repoSlug(origin) !== repoSlug(ws.repo)) {
-    messages.push(`${recorded} is an old context repo (${repoSlug(origin)}); you can delete it`);
-    recorded = resolveContextRepoDest(dirname(recorded), ws.dirName);
+    messages.push(`${recorded} is an old context workspace (${repoSlug(origin)}); you can delete it`);
+    recorded = resolveContextWorkspaceDest(dirname(recorded), ws.dirName);
   }
-  const dest = recorded ?? resolveContextRepoDest(
-    prompter.askPath(`Where should the ${ws.dirName} context repo live?`, deps.cwd ?? process.cwd()),
+  const dest = recorded ?? resolveContextWorkspaceDest(
+    prompter.askPath(`Where should the ${ws.dirName} context workspace live?`, deps.cwd ?? process.cwd()),
     ws.dirName,
   );
 
@@ -69,19 +69,19 @@ export function open(payload: EmbeddedPayload, opts: OpenOpts, deps: OpenDeps = 
     return { ok: true, dest, messages: [...messages, `[dry-run] would clone or fast-forward ${ws.repo}${ws.branch ? ` (${ws.branch})` : ""} at ${dest}, then open Claude Code there`] };
   }
 
-  const status = (deps.contextRepoStatus ?? realWsStatus)(dest);
+  const status = (deps.contextWorkspaceStatus ?? realWsStatus)(dest);
   if (status.state === "absent") {
-    const clone = (deps.cloneContextRepo ?? realClone)(ws.repo, dest, ws.branch);
+    const clone = (deps.cloneContextWorkspace ?? realClone)(ws.repo, dest, ws.branch);
     if (!clone.ok && !clone.skipped) return { ok: false, dest, messages: [...messages, clone.error ?? "clone failed"] };
     messages.push(`cloned ${ws.repo} → ${dest}`);
   } else if (status.state === "behind-clean") {
-    const r = (deps.pullContextRepo ?? realPull)(dest);
+    const r = (deps.pullContextWorkspace ?? realPull)(dest);
     messages.push(r.ok ? `pulled ${status.behind} new commit${status.behind === 1 ? "" : "s"}` : `⚠ ${r.error ?? "pull failed"} — opening as-is`);
   } else if (status.state !== "up-to-date") {
-    messages.push(`⚠ context repo is ${status.state} — opening as-is (run \`git pull\` yourself when ready)`);
+    messages.push(`⚠ context workspace is ${status.state} — opening as-is (run \`git pull\` yourself when ready)`);
   }
 
-  (deps.recordContextRepoPath ?? realRecord)(dest);
+  (deps.recordContextWorkspacePath ?? realRecord)(dest);
   for (const m of messages) console.log(m);
   (deps.openClaude ?? realOpen)(dest);
   return { ok: true, dest, messages };

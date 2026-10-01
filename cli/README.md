@@ -7,7 +7,7 @@ covers what it does once it's running.
 
 ```sh
 ner-jarvis                 # setup: install the skills + connect sources (interactive)
-ner-jarvis open            # clone or refresh the context repo, open Claude Code in it
+ner-jarvis open            # clone or refresh the context workspace, open Claude Code in it
 ner-jarvis doctor          # read-only health check; non-zero exit if anything's off
 ner-jarvis update          # re-apply this version's skills and sources
 ner-jarvis undo            # reverse the most recent setup/update run (--list shows runs)

@@ -1,7 +1,7 @@
 # ner-jarvis
 
 **One command to set up Claude Code for Northeastern Electric Racing.** It installs
-the NER skills, connects Slack and Atlassian, and opens Claude in a context repo where
+the NER skills, connects Slack and Atlassian, and opens Claude in a context workspace where
 you can ask anything about NER software.
 
 ## Install
@@ -47,5 +47,5 @@ Setup asks before each step. When it finishes, sign in to Slack and Atlassian (r
 
 | Folder | For | What's in it |
 |---|---|---|
-| [`context/`](context/) | Members | Everything Claude needs to answer NER questions: `CLAUDE.md` and the NER [skills](context/skills/). Members clone it as the [`context-repo`](https://github.com/Northeastern-Electric-Racing/ner-jarvis/tree/context-repo) branch. |
+| [`context/`](context/) | Members | Everything Claude needs to answer NER questions: `CLAUDE.md` and the NER [skills](context/skills/). Members clone it as the [`context-workspace`](https://github.com/Northeastern-Electric-Racing/ner-jarvis/tree/context-workspace) branch. |
 | [`cli/`](cli/) | Maintainers | The `ner-jarvis` installer. Its build embeds `context/skills/`. |

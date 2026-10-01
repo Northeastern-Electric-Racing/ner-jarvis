@@ -91,7 +91,7 @@ export type GlobalContextState =
 /**
  * Read-only: what would `addGlobalContext` do? Lets the setup wizard show the note's
  * status and prompt only when there's a real change — instead of asking "add a line?"
- * every run even when it's already present. Mirrors `contextRepoStatus` / the planners.
+ * every run even when it's already present. Mirrors `contextWorkspaceStatus` / the planners.
  */
 export function globalContextStatus(): GlobalContextState {
   const path = globalContextFile();

@@ -1,4 +1,4 @@
-# NER context repo
+# NER context workspace
 
 Home base for a new Northeastern Electric Racing (NER) software member. The real
 knowledge lives in the **NER skills** (source in `skills/`, installed to

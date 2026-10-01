@@ -1,5 +1,5 @@
 # TRANSITIONAL — delete this file (and the CONTEXT_DEPLOY_KEY secret/deploy key) when
-# ner-jarvis-context is archived. v0.1.3+ clones the context-repo branch instead; this
+# ner-jarvis-context is archived. v0.1.3+ clones the context-workspace branch instead; this
 # only keeps v0.1.0–v0.1.2 members' clones current until they upgrade.
 #
 # Publishes context/ to Northeastern-Electric-Racing/ner-jarvis-context as that

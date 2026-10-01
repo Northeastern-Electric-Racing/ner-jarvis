@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { resolveContextRepoDest, cloneContextRepo, openClaude, contextRepoStatus, pullContextRepo, repoSlug } from "./context-repo";
+import { resolveContextWorkspaceDest, cloneContextWorkspace, openClaude, contextWorkspaceStatus, pullContextWorkspace, repoSlug } from "./context-workspace";
 import { writeShim } from "../../test/helpers";
 
 const temps: string[] = [];
@@ -16,11 +16,11 @@ afterEach(() => {
   while (temps.length) rmSync(temps.pop()!, { recursive: true, force: true });
 });
 
-test("resolveContextRepoDest joins base + dirName", () => {
-  expect(resolveContextRepoDest("/a/b", "ner-jarvis")).toBe(join("/a/b", "ner-jarvis"));
+test("resolveContextWorkspaceDest joins base + dirName", () => {
+  expect(resolveContextWorkspaceDest("/a/b", "ner-jarvis")).toBe(join("/a/b", "ner-jarvis"));
 });
 
-test("cloneContextRepo clones a local repo into <dest> (offline)", () => {
+test("cloneContextWorkspace clones a local repo into <dest> (offline)", () => {
   const src = tmp("nerj-src-");
   execFileSync("git", ["init", "-q", src], { env: process.env });
   writeFileSync(join(src, "README.md"), "hi");
@@ -31,21 +31,21 @@ test("cloneContextRepo clones a local repo into <dest> (offline)", () => {
     { env: process.env },
   );
 
-  const dest = resolveContextRepoDest(tmp("nerj-dest-"), "clone");
-  const r = cloneContextRepo(src, dest);
+  const dest = resolveContextWorkspaceDest(tmp("nerj-dest-"), "clone");
+  const r = cloneContextWorkspace(src, dest);
   expect(r.ok).toBe(true);
   expect(existsSync(join(dest, "README.md"))).toBe(true);
 });
 
-test("cloneContextRepo refuses when dest already exists (runs no git)", () => {
-  const dest = resolveContextRepoDest(tmp("nerj-dest2-"), "clone");
+test("cloneContextWorkspace refuses when dest already exists (runs no git)", () => {
+  const dest = resolveContextWorkspaceDest(tmp("nerj-dest2-"), "clone");
   mkdirSync(dest, { recursive: true }); // pre-existing; no subprocess needed
-  const r = cloneContextRepo("/definitely/not/a/repo.git", dest);
+  const r = cloneContextWorkspace("/definitely/not/a/repo.git", dest);
   expect(r.ok).toBe(false);
   expect(r.skipped).toBeDefined();
 });
 
-// --- contextRepoStatus / pullContextRepo (real local git, offline) ---------------
+// --- contextWorkspaceStatus / pullContextWorkspace (real local git, offline) ---------------
 
 /** Run a git command in `cwd` with a canned identity, output silenced. */
 function gitC(cwd: string, ...args: string[]): void {
@@ -61,7 +61,7 @@ function srcAndClone(): { src: string; clone: string } {
   writeFileSync(join(src, "README.md"), "v1");
   gitC(src, "add", "-A");
   gitC(src, "commit", "-q", "-m", "init");
-  const clone = resolveContextRepoDest(tmp("nerj-wdest-"), "clone");
+  const clone = resolveContextWorkspaceDest(tmp("nerj-wdest-"), "clone");
   execFileSync("git", ["clone", "-q", src, clone], { env: process.env });
   return { src, clone };
 }
@@ -72,52 +72,52 @@ function advance(src: string): void {
   gitC(src, "commit", "-q", "-m", "second");
 }
 
-test("contextRepoStatus: a path that doesn't exist → absent", () => {
-  expect(contextRepoStatus(join(tmp("nerj-abs-"), "nope")).state).toBe("absent");
+test("contextWorkspaceStatus: a path that doesn't exist → absent", () => {
+  expect(contextWorkspaceStatus(join(tmp("nerj-abs-"), "nope")).state).toBe("absent");
 });
 
-test("contextRepoStatus: an existing non-git directory → not-git", () => {
-  expect(contextRepoStatus(tmp("nerj-plain-")).state).toBe("not-git");
+test("contextWorkspaceStatus: an existing non-git directory → not-git", () => {
+  expect(contextWorkspaceStatus(tmp("nerj-plain-")).state).toBe("not-git");
 });
 
-test("contextRepoStatus: a fresh clone with nothing new upstream → up-to-date", () => {
+test("contextWorkspaceStatus: a fresh clone with nothing new upstream → up-to-date", () => {
   const { clone } = srcAndClone();
-  expect(contextRepoStatus(clone).state).toBe("up-to-date");
+  expect(contextWorkspaceStatus(clone).state).toBe("up-to-date");
 });
 
-test("contextRepoStatus: origin advanced, working tree clean → behind-clean with a count", () => {
+test("contextWorkspaceStatus: origin advanced, working tree clean → behind-clean with a count", () => {
   const { src, clone } = srcAndClone();
   advance(src);
-  const st = contextRepoStatus(clone);
+  const st = contextWorkspaceStatus(clone);
   expect(st.state).toBe("behind-clean");
   expect(st.behind).toBe(1);
 });
 
-test("contextRepoStatus: behind origin but with local uncommitted edits → behind-dirty (never pull)", () => {
+test("contextWorkspaceStatus: behind origin but with local uncommitted edits → behind-dirty (never pull)", () => {
   const { src, clone } = srcAndClone();
   advance(src);
   writeFileSync(join(clone, "README.md"), "local edit"); // dirty the tracked file
-  const st = contextRepoStatus(clone);
+  const st = contextWorkspaceStatus(clone);
   expect(st.state).toBe("behind-dirty");
   expect(st.dirty).toBe(true);
 });
 
-test("contextRepoStatus: a git repo with no upstream branch → no-upstream", () => {
+test("contextWorkspaceStatus: a git repo with no upstream branch → no-upstream", () => {
   const solo = tmp("nerj-solo-");
   execFileSync("git", ["init", "-q", solo], { env: process.env });
   writeFileSync(join(solo, "f.txt"), "x");
   gitC(solo, "add", "-A");
   gitC(solo, "commit", "-q", "-m", "init");
-  expect(contextRepoStatus(solo).state).toBe("no-upstream");
+  expect(contextWorkspaceStatus(solo).state).toBe("no-upstream");
 });
 
-test("pullContextRepo: fast-forwards a behind-clean clone and updates files", () => {
+test("pullContextWorkspace: fast-forwards a behind-clean clone and updates files", () => {
   const { src, clone } = srcAndClone();
   advance(src);
-  const r = pullContextRepo(clone);
+  const r = pullContextWorkspace(clone);
   expect(r.ok).toBe(true);
   expect(readFileSync(join(clone, "README.md"), "utf8")).toBe("v2");
-  expect(contextRepoStatus(clone).state).toBe("up-to-date"); // no longer behind
+  expect(contextWorkspaceStatus(clone).state).toBe("up-to-date"); // no longer behind
 });
 
 test("openClaude launches the claude bin with cwd = the given dir", () => {

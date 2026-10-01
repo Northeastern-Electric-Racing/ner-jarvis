@@ -1,12 +1,12 @@
-# NER context repo
+# NER context workspace
 
-The **NER software context repo** — your home base while you get set up on
+The **NER software context workspace** — your home base while you get set up on
 the software team. `ner-jarvis open` clones it and opens Claude Code here;
 `ner-jarvis setup` installs the NER skills and data sources.
 
-> This folder is the [`context-repo`](https://github.com/Northeastern-Electric-Racing/ner-jarvis/tree/context-repo)
+> This folder is the [`context-workspace`](https://github.com/Northeastern-Electric-Racing/ner-jarvis/tree/context-workspace)
 > branch of `ner-jarvis`, kept in sync with `context/` on `main`. To change it, open a
-> PR into `context-repo` (or edit `context/` on `main`). CI proposes changes made here to
+> PR into `context-workspace` (or edit `context/` on `main`). CI proposes changes made here to
 > `main` for review.
 
 Everything Claude needs to answer NER questions is here: its instructions in

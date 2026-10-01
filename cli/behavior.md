@@ -96,10 +96,10 @@ sources (slack, atlassian) authenticate on first use.
 
 - `ner-jarvis [setup] [name…]` — the default command. Installs the NER skills,
   connects the sources, and (on a full, interactive run) offers a one-line note for
-  the user's global `~/.claude/CLAUDE.md`, clones the NER context repo, and opens Claude
+  the user's global `~/.claude/CLAUDE.md`, clones the NER context workspace, and opens Claude
   Code in it. **Interactive by default on a TTY**: it confirms each step (see "Setup
   wizard"). With `name…` it operates only on those skills/sources (targeted) and
-  skips the global-context and context-repo steps. Idempotent and non-destructive.
+  skips the global-context and context-workspace steps. Idempotent and non-destructive.
 - `ner-jarvis update [name…]` — re-applies the latest embedded payload, reusing the
   same convergence engine as `setup`. Non-interactive. On the binary channel it
   *reports* a newer release if one exists but never rewrites the running executable
@@ -146,12 +146,12 @@ sources (slack, atlassian) authenticate on first use.
     a supplied `--successor` means `superseded`, its absence means `orphan-current`.
     Purely historical content is not stale and is never recorded — see "Stale-doc
     reports" below.
-- `ner-jarvis open` — get into the context repo in one step. Uses the path
-  recorded in `~/.claude/ner-jarvis/context-repo.json` (written by `setup` and `open`),
-  or asks for a parent directory and appends `contextRepo.dirName`. If the recorded clone's
+- `ner-jarvis open` — get into the context workspace in one step. Uses the path
+  recorded in `~/.claude/ner-jarvis/context-workspace.json` (written by `setup` and `open`),
+  or asks for a parent directory and appends `contextWorkspace.dirName`. If the recorded clone's
   `origin` is a different repo (the retired `ner-jarvis-context` mirror), it's left
-  untouched and reported, and the context repo goes to `contextRepo.dirName` beside it. Then:
-  absent → `git clone` `contextRepo.repo`, only `contextRepo.branch` when set
+  untouched and reported, and the context workspace goes to `contextWorkspace.dirName` beside it. Then:
+  absent → `git clone` `contextWorkspace.repo`, only `contextWorkspace.branch` when set
   (`--branch <b> --single-branch`); behind origin **and** clean → `git pull --ff-only`
   without prompting; any other git state → report it and open as-is (never pulls over
   local work). Finally launches Claude Code there. A failed clone opens nothing and exits
@@ -171,10 +171,10 @@ sources (slack, atlassian) authenticate on first use.
   Declining a step skips exactly that step, so the prompts double as "choose what
   gets installed."
 - **Assume-yes** (`--yes`/`-y`) — auto-answers yes to every step (including the
-  global-context note and context-repo clone + open); no prompts. A full unattended run.
+  global-context note and context-workspace clone + open); no prompts. A full unattended run.
 - **Non-interactive minimal** (no TTY and no `--yes`, e.g. CI or a pipe) — installs
   skills + connects sources exactly as the legacy flow did and **skips the
-  global-context, context-repo clone, and open steps** (never edit the user's global
+  global-context, context-workspace clone, and open steps** (never edit the user's global
   CLAUDE.md, clone into an arbitrary CWD, or launch an interactive REPL unattended).
 
 Steps (each gated by a confirm in interactive mode; auto-yes under `--yes`):
@@ -205,7 +205,7 @@ Steps (each gated by a confirm in interactive mode; auto-yes under `--yes`):
    ("already present") if it matches the current note, or an in-place **refresh** (same
    position, surrounding text intact) if a version bump has left it stale. Creates the
    file if absent; removed on a full `uninstall`.
-5. **Clone the context repo** (full run only; requires `payload.contextRepo`) — "Clone
+5. **Clone the context workspace** (full run only; requires `payload.contextWorkspace`) — "Clone
    `<repo>` — where to?" The answer is a **path, or Enter for the current working
    directory**; the repo is cloned into `<dir>/<dirName>` (git's normal behavior).
    If that target already exists, stop and report rather than clobber.
@@ -218,12 +218,12 @@ Steps (each gated by a confirm in interactive mode; auto-yes under `--yes`):
    and, if it's missing or logged out, guides installing it + `gh auth login`.
 8. **Record state** (see below), **write an undo record** (see "Undo journal"), and
    **append the decision log** (see "Decision log"). State records only
-   skills/sources — never the context repo or the global note; the undo record also
+   skills/sources — never the context workspace or the global note; the undo record also
    captures the global note (as a bodiless `global-note` item) and the prior content
    of anything overwritten.
 
 Targeting (`setup <name…>`) scopes to the named skills/sources and **never** runs
-the global-context, context-repo clone, or open steps.
+the global-context, context-workspace clone, or open steps.
 
 ## State file
 

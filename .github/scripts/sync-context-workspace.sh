@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# .github/scripts/sync-context-repo.sh [refresh|propose]: keep context/ on main in sync with branch
-# context-repo, whose repo root is that folder. Same model as Delphi's ci/sync.sh. CI runs it with no
-# direction (both) on every push to main or context-repo.
-#   refresh: merge main into context-repo (-Xsubtree=context) and push if the tree changed. A missing
-#            context-repo is created as one commit: tree = context/, parent = main.
-#   propose: build propose/context-repo = main + a subtree merge of context-repo; if that changes main and
-#            isn't already on propose/context-repo, check it, force-push it, and open or update its PR.
+# .github/scripts/sync-context-workspace.sh [refresh|propose]: keep context/ on main in sync with branch
+# context-workspace, whose repo root is that folder. Same model as Delphi's ci/sync.sh. CI runs it with no
+# direction (both) on every push to main or context-workspace.
+#   refresh: merge main into context-workspace (-Xsubtree=context) and push if the tree changed. A missing
+#            context-workspace is created as one commit: tree = context/, parent = main.
+#   propose: build propose/context-workspace = main + a subtree merge of context-workspace; if that changes main and
+#            isn't already on propose/context-workspace, check it, force-push it, and open or update its PR.
 # A conflict is reported with its files and exits 1. Merges run in a temporary worktree.
 set -euo pipefail
 dir=both
 case "${1:-}" in refresh | propose) dir=$1 ;; "") ;; *) echo "usage: $0 [refresh|propose]" >&2 && exit 2 ;; esac
-branch=context-repo folder=context
+branch=context-workspace folder=context
 
 git fetch --quiet --prune origin
 main=$(git rev-parse origin/main)
@@ -64,7 +64,7 @@ case "$(tree HEAD)" in "$(tree "$main")" | "$(tree "refs/remotes/origin/propose/
 check || { echo "$branch: check failed; not proposed" >&2 && exit 1; }
 git -C "$wt" push --quiet --force origin "HEAD:refs/heads/propose/$branch"
 title="$branch → main"
-body="Proposes \`$branch\` into \`$folder/\` (opened by .github/scripts/sync-context-repo.sh).
+body="Proposes \`$branch\` into \`$folder/\` (opened by .github/scripts/sync-context-workspace.sh).
 
 Changed files:
 $(git -C "$wt" diff --name-only "$main" HEAD | sed 's/^/- /')

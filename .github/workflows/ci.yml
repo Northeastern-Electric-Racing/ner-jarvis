@@ -8,7 +8,7 @@ name: CI
 
 on:
   push:
-    branches-ignore: [context-repo] # just context/; the sync workflow covers it
+    branches-ignore: [context-workspace] # just context/; the sync workflow covers it
   pull_request:
     branches: [main]
 
@@ -40,10 +40,10 @@ jobs:
       - name: Check context README is in sync with the roster
         run: bun run sync:context --check
 
-      # The context-repo branch needs its own copy of the sync workflow (see sync-context-repo.yml).
-      - name: Check the context repo's sync workflow matches main's
+      # The context-workspace branch needs its own copy of the sync workflow (see sync-context-workspace.yml).
+      - name: Check the context workspace's sync workflow matches main's
         shell: bash
-        run: cmp ../.github/workflows/sync-context-repo.yml ../context/.github/workflows/sync-context-repo.yml
+        run: cmp ../.github/workflows/sync-context-workspace.yml ../context/.github/workflows/sync-context-workspace.yml
 
       # --timeout: the default 5s is too tight on windows-latest, where each
       # `claude` spawn costs a few hundred ms and a full setup run makes dozens.
