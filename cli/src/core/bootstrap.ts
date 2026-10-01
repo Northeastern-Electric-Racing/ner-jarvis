@@ -17,7 +17,7 @@ import { isClaudeAvailable } from "./claude";
  * The installer only edits the user's shell profile for *future* shells, so this
  * process's PATH doesn't see the new binary. We prepend `~/.local/bin` to
  * `process.env.PATH` (every spawn passes `env: process.env`) so the rest of setup —
- * plugin installs, `claude mcp …`, opening the workspace — finds it without a restart.
+ * plugin installs, `claude mcp …`, opening the context workspace — finds it without a restart.
  *
  * Claude Code is the host, not something ner-jarvis owns: this is never journaled for
  * undo and `uninstall` never removes it.

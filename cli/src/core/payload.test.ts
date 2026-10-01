@@ -23,13 +23,14 @@ test("validatePayload rejects a malformed source", () => {
     sources: [{ name: "x", type: "mcp" }] as any })).toThrow();
 });
 
-test("loadPayload exposes the workspace repo + dirName", () => {
+test("loadPayload exposes the context workspace, dirName, and branch", () => {
   const p = loadPayload();
-  expect(p.workspace?.repo).toContain("Northeastern-Electric-Racing/ner-jarvis-context");
-  expect(p.workspace?.dirName).toBe("ner-jarvis-context");
+  expect(p.contextWorkspace?.repo).toMatch(/Northeastern-Electric-Racing\/ner-jarvis\.git$/);
+  expect(p.contextWorkspace?.dirName).toBe("ner-context-workspace");
+  expect(p.contextWorkspace?.branch).toBe("context-workspace");
 });
 
-test("validatePayload rejects a workspace missing repo", () => {
+test("validatePayload rejects a context workspace missing repo", () => {
   expect(() => validatePayload({ version: "1.0.0", skills: [], marketplaces: [], sources: [],
-    workspace: { dirName: "x" } as any })).toThrow();
+    contextWorkspace: { dirName: "x" } as any })).toThrow();
 });

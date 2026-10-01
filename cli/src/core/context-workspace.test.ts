@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { resolveWorkspaceDest, cloneWorkspace, openClaude, workspaceStatus, pullWorkspace } from "./workspace";
+import { resolveContextWorkspaceDest, cloneContextWorkspace, openClaude, contextWorkspaceStatus, pullContextWorkspace, repoSlug } from "./context-workspace";
 import { writeShim } from "../../test/helpers";
 
 const temps: string[] = [];
@@ -16,11 +16,11 @@ afterEach(() => {
   while (temps.length) rmSync(temps.pop()!, { recursive: true, force: true });
 });
 
-test("resolveWorkspaceDest joins base + dirName", () => {
-  expect(resolveWorkspaceDest("/a/b", "ner-jarvis")).toBe(join("/a/b", "ner-jarvis"));
+test("resolveContextWorkspaceDest joins base + dirName", () => {
+  expect(resolveContextWorkspaceDest("/a/b", "ner-jarvis")).toBe(join("/a/b", "ner-jarvis"));
 });
 
-test("cloneWorkspace clones a local repo into <dest> (offline)", () => {
+test("cloneContextWorkspace clones a local repo into <dest> (offline)", () => {
   const src = tmp("nerj-src-");
   execFileSync("git", ["init", "-q", src], { env: process.env });
   writeFileSync(join(src, "README.md"), "hi");
@@ -31,21 +31,21 @@ test("cloneWorkspace clones a local repo into <dest> (offline)", () => {
     { env: process.env },
   );
 
-  const dest = resolveWorkspaceDest(tmp("nerj-dest-"), "clone");
-  const r = cloneWorkspace(src, dest);
+  const dest = resolveContextWorkspaceDest(tmp("nerj-dest-"), "clone");
+  const r = cloneContextWorkspace(src, dest);
   expect(r.ok).toBe(true);
   expect(existsSync(join(dest, "README.md"))).toBe(true);
 });
 
-test("cloneWorkspace refuses when dest already exists (runs no git)", () => {
-  const dest = resolveWorkspaceDest(tmp("nerj-dest2-"), "clone");
+test("cloneContextWorkspace refuses when dest already exists (runs no git)", () => {
+  const dest = resolveContextWorkspaceDest(tmp("nerj-dest2-"), "clone");
   mkdirSync(dest, { recursive: true }); // pre-existing; no subprocess needed
-  const r = cloneWorkspace("/definitely/not/a/repo.git", dest);
+  const r = cloneContextWorkspace("/definitely/not/a/repo.git", dest);
   expect(r.ok).toBe(false);
   expect(r.skipped).toBeDefined();
 });
 
-// --- workspaceStatus / pullWorkspace (real local git, offline) ---------------
+// --- contextWorkspaceStatus / pullContextWorkspace (real local git, offline) ---------------
 
 /** Run a git command in `cwd` with a canned identity, output silenced. */
 function gitC(cwd: string, ...args: string[]): void {
@@ -61,7 +61,7 @@ function srcAndClone(): { src: string; clone: string } {
   writeFileSync(join(src, "README.md"), "v1");
   gitC(src, "add", "-A");
   gitC(src, "commit", "-q", "-m", "init");
-  const clone = resolveWorkspaceDest(tmp("nerj-wdest-"), "clone");
+  const clone = resolveContextWorkspaceDest(tmp("nerj-wdest-"), "clone");
   execFileSync("git", ["clone", "-q", src, clone], { env: process.env });
   return { src, clone };
 }
@@ -72,52 +72,52 @@ function advance(src: string): void {
   gitC(src, "commit", "-q", "-m", "second");
 }
 
-test("workspaceStatus: a path that doesn't exist → absent", () => {
-  expect(workspaceStatus(join(tmp("nerj-abs-"), "nope")).state).toBe("absent");
+test("contextWorkspaceStatus: a path that doesn't exist → absent", () => {
+  expect(contextWorkspaceStatus(join(tmp("nerj-abs-"), "nope")).state).toBe("absent");
 });
 
-test("workspaceStatus: an existing non-git directory → not-git", () => {
-  expect(workspaceStatus(tmp("nerj-plain-")).state).toBe("not-git");
+test("contextWorkspaceStatus: an existing non-git directory → not-git", () => {
+  expect(contextWorkspaceStatus(tmp("nerj-plain-")).state).toBe("not-git");
 });
 
-test("workspaceStatus: a fresh clone with nothing new upstream → up-to-date", () => {
+test("contextWorkspaceStatus: a fresh clone with nothing new upstream → up-to-date", () => {
   const { clone } = srcAndClone();
-  expect(workspaceStatus(clone).state).toBe("up-to-date");
+  expect(contextWorkspaceStatus(clone).state).toBe("up-to-date");
 });
 
-test("workspaceStatus: origin advanced, working tree clean → behind-clean with a count", () => {
+test("contextWorkspaceStatus: origin advanced, working tree clean → behind-clean with a count", () => {
   const { src, clone } = srcAndClone();
   advance(src);
-  const st = workspaceStatus(clone);
+  const st = contextWorkspaceStatus(clone);
   expect(st.state).toBe("behind-clean");
   expect(st.behind).toBe(1);
 });
 
-test("workspaceStatus: behind origin but with local uncommitted edits → behind-dirty (never pull)", () => {
+test("contextWorkspaceStatus: behind origin but with local uncommitted edits → behind-dirty (never pull)", () => {
   const { src, clone } = srcAndClone();
   advance(src);
   writeFileSync(join(clone, "README.md"), "local edit"); // dirty the tracked file
-  const st = workspaceStatus(clone);
+  const st = contextWorkspaceStatus(clone);
   expect(st.state).toBe("behind-dirty");
   expect(st.dirty).toBe(true);
 });
 
-test("workspaceStatus: a git repo with no upstream branch → no-upstream", () => {
+test("contextWorkspaceStatus: a git repo with no upstream branch → no-upstream", () => {
   const solo = tmp("nerj-solo-");
   execFileSync("git", ["init", "-q", solo], { env: process.env });
   writeFileSync(join(solo, "f.txt"), "x");
   gitC(solo, "add", "-A");
   gitC(solo, "commit", "-q", "-m", "init");
-  expect(workspaceStatus(solo).state).toBe("no-upstream");
+  expect(contextWorkspaceStatus(solo).state).toBe("no-upstream");
 });
 
-test("pullWorkspace: fast-forwards a behind-clean clone and updates files", () => {
+test("pullContextWorkspace: fast-forwards a behind-clean clone and updates files", () => {
   const { src, clone } = srcAndClone();
   advance(src);
-  const r = pullWorkspace(clone);
+  const r = pullContextWorkspace(clone);
   expect(r.ok).toBe(true);
   expect(readFileSync(join(clone, "README.md"), "utf8")).toBe("v2");
-  expect(workspaceStatus(clone).state).toBe("up-to-date"); // no longer behind
+  expect(contextWorkspaceStatus(clone).state).toBe("up-to-date"); // no longer behind
 });
 
 test("openClaude launches the claude bin with cwd = the given dir", () => {
@@ -139,4 +139,11 @@ test("openClaude launches the claude bin with cwd = the given dir", () => {
     if (saved === undefined) delete process.env.NER_JARVIS_CLAUDE_BIN;
     else process.env.NER_JARVIS_CLAUDE_BIN = saved;
   }
+});
+
+test("repoSlug matches https and ssh forms of the same repo", () => {
+  expect(repoSlug("https://github.com/Org/Repo.git")).toBe("org/repo");
+  expect(repoSlug("git@github.com:Org/Repo.git")).toBe("org/repo");
+  expect(repoSlug("https://github.com/Org/Repo/")).toBe("org/repo");
+  expect(repoSlug("https://github.com/Org/Repo-context.git")).not.toBe("org/repo");
 });

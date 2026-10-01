@@ -9,15 +9,15 @@ import { planSkills } from "../core/skills";
 import { planSources, gatherClaudeView } from "../core/sources";
 import { previewSkills, previewSources } from "../core/preview";
 import {
-  cloneWorkspace as realClone,
+  cloneContextWorkspace as realClone,
   openClaude as realOpen,
-  resolveWorkspaceDest,
-  workspaceStatus as realWsStatus,
-  pullWorkspace as realPull,
-  recordWorkspacePath as realRecord,
+  resolveContextWorkspaceDest,
+  contextWorkspaceStatus as realWsStatus,
+  pullContextWorkspace as realPull,
+  recordContextWorkspacePath as realRecord,
   type CloneResult,
-  type WorkspaceStatus,
-} from "../core/workspace";
+  type ContextWorkspaceStatus,
+} from "../core/context-workspace";
 import { isClaudeAvailable as realHasClaude, mcpListText, mcpServerStatus, type RunResult } from "../core/claude";
 import { installClaudeCode as realInstallClaude, installerCommand, type InstallClaudeResult } from "../core/bootstrap";
 import { logDecision as realLog, type DecisionEvent } from "../core/log";
@@ -35,11 +35,11 @@ export interface SetupOpts {
 /** Side-effecting collaborators, injectable for tests. Real defaults used in prod. */
 export interface SetupDeps {
   prompter?: Prompter;
-  cloneWorkspace?: (repo: string, dest: string) => CloneResult;
-  workspaceStatus?: (dest: string) => WorkspaceStatus;
-  pullWorkspace?: (dest: string) => { ok: boolean; error?: string };
+  cloneContextWorkspace?: (repo: string, dest: string, branch?: string) => CloneResult;
+  contextWorkspaceStatus?: (dest: string) => ContextWorkspaceStatus;
+  pullContextWorkspace?: (dest: string) => { ok: boolean; error?: string };
   openClaude?: (dir: string) => RunResult;
-  recordWorkspacePath?: (dest: string) => void;
+  recordContextWorkspacePath?: (dest: string) => void;
   logDecision?: (event: DecisionEvent) => void;
   addGlobalContext?: () => ContextResult;
   isClaudeAvailable?: () => boolean;
@@ -48,8 +48,8 @@ export interface SetupDeps {
   isTTY?: boolean;
 }
 
-/** One-line status for an already-present workspace, mirroring doctor's glyphs. */
-function workspaceStatusLine(s: WorkspaceStatus): string {
+/** One-line status for an already-present context workspace, mirroring doctor's glyphs. */
+function contextWorkspaceStatusLine(s: ContextWorkspaceStatus): string {
   switch (s.state) {
     case "up-to-date":   return "✓ up to date with origin";
     case "behind-clean": return `↑ ${s.behind} commit${s.behind === 1 ? "" : "s"} behind origin`;
@@ -118,23 +118,23 @@ function recordGlobalNote(runId: string, version: string): void {
 
 /**
  * Install NER skills + connect sources, and (on a full interactive/`--yes` run)
- * clone the NER workspace and open Claude Code in it.
+ * clone the NER context workspace and open Claude Code in it.
  *
  * Three modes:
  *  - **interactive** (TTY, no `--yes`): confirm each step (Enter=yes / n).
- *  - **assume-yes** (`--yes`): auto-yes everything, including the workspace steps.
+ *  - **assume-yes** (`--yes`): auto-yes everything, including the context workspace steps.
  *  - **minimal** (no TTY, no `--yes`; CI / pipes / tests): the legacy skills+sources
- *    converge, with NO workspace steps.
+ *    converge, with NO context workspace steps.
  *
  * The reconciliation engine (`converge`) is reused unchanged — the prompts just
  * decide which items it's asked to act on. Every run appends to the decision log.
  */
 export function setup(payload: EmbeddedPayload, opts: SetupOpts, deps: SetupDeps = {}): RunSummary {
   const log = deps.logDecision ?? realLog;
-  const cloneFn = deps.cloneWorkspace ?? realClone;
-  const wsStatusFn = deps.workspaceStatus ?? realWsStatus;
-  const pullFn = deps.pullWorkspace ?? realPull;
-  const recordFn = deps.recordWorkspacePath ?? realRecord;
+  const cloneFn = deps.cloneContextWorkspace ?? realClone;
+  const wsStatusFn = deps.contextWorkspaceStatus ?? realWsStatus;
+  const pullFn = deps.pullContextWorkspace ?? realPull;
+  const recordFn = deps.recordContextWorkspacePath ?? realRecord;
   const openFn = deps.openClaude ?? realOpen;
   const addContext = deps.addGlobalContext ?? realAddContext;
   const cwd = deps.cwd ?? process.cwd();
@@ -174,7 +174,7 @@ export function setup(payload: EmbeddedPayload, opts: SetupOpts, deps: SetupDeps
   }
   log({ event: "start", command: "setup", mode, targets: opts.targets, dryRun: opts.dryRun });
 
-  // --- Minimal (legacy) path: full-or-targeted converge, no workspace steps. ---
+  // --- Minimal (legacy) path: full-or-targeted converge, no context workspace steps. ---
   if (minimal) {
     const full = opts.targets.length === 0;
     const summary = converge(payload, { targets: opts.targets, force: opts.force, full, dryRun: opts.dryRun });
@@ -283,16 +283,16 @@ export function setup(payload: EmbeddedPayload, opts: SetupOpts, deps: SetupDeps
     console.log(`\n[dry-run] would check the NER usage note in ${globalContextFile()} and add or refresh it if needed.`);
   }
 
-  // Workspace steps: full (untargeted) runs only, and only if a workspace is declared.
-  if (full && payload.workspace) {
-    const ws = payload.workspace;
+  // Context-workspace steps: full (untargeted) runs only, and only if a context workspace is declared.
+  if (full && payload.contextWorkspace) {
+    const ws = payload.contextWorkspace;
     if (opts.dryRun) {
-      console.log(`\n[dry-run] would clone ${ws.repo} into ${resolveWorkspaceDest(cwd, ws.dirName)} (or, if it already exists, report its git status and offer a fast-forward pull) and offer to open Claude Code.`);
+      console.log(`\n[dry-run] would clone ${ws.repo} into ${resolveContextWorkspaceDest(cwd, ws.dirName)} (or, if it already exists, report its git status and offer a fast-forward pull) and offer to open Claude Code.`);
     } else {
       // Neutral wording: on first run we clone here; on a re-run the dir already
       // exists and we report/update it instead. Either way this picks the parent dir.
-      const base = prompter.askPath(`Set up the ${ws.repo} workspace — which directory?`, cwd);
-      const dest = resolveWorkspaceDest(base, ws.dirName);
+      const base = prompter.askPath(`Set up the ${ws.repo} context workspace — which directory?`, cwd);
+      const dest = resolveContextWorkspaceDest(base, ws.dirName);
       log({ event: "prompt", step: "clone-path", answer: dest });
 
       // Check the diff, not just whether it's there: absent → clone; present → report
@@ -300,38 +300,38 @@ export function setup(payload: EmbeddedPayload, opts: SetupOpts, deps: SetupDeps
       const status = wsStatusFn(dest);
       let haveDir = false;
       if (status.state === "absent") {
-        const clone = cloneFn(ws.repo, dest);
+        const clone = cloneFn(ws.repo, dest, ws.branch);
         if (clone.ok) {
-          summary.successes.push(`workspace cloned → ${dest}`);
+          summary.successes.push(`context workspace cloned → ${dest}`);
           log({ event: "step", step: "clone", outcome: "ok", dest });
           haveDir = true;
         } else if (clone.skipped) {
-          summary.skipped.push({ item: `workspace ${dest}`, reason: clone.skipped });
+          summary.skipped.push({ item: `context workspace ${dest}`, reason: clone.skipped });
           log({ event: "step", step: "clone", outcome: "skipped", reason: clone.skipped });
           haveDir = true;
         } else {
-          summary.failures.push({ item: `workspace ${dest}`, error: clone.error ?? "clone failed" });
+          summary.failures.push({ item: `context workspace ${dest}`, error: clone.error ?? "clone failed" });
           log({ event: "step", step: "clone", outcome: "failed" });
         }
       } else {
         // Already present — never re-clone; report status and maybe fast-forward.
         haveDir = true;
-        console.log(`\nWorkspace (${dest}):`);
-        console.log("  " + workspaceStatusLine(status));
-        log({ event: "step", step: "workspace", outcome: status.state, behind: status.behind ?? 0 });
+        console.log(`\nContext workspace (${dest}):`);
+        console.log("  " + contextWorkspaceStatusLine(status));
+        log({ event: "step", step: "context-workspace", outcome: status.state, behind: status.behind ?? 0 });
         if (status.state === "behind-clean") {
           const n = status.behind ?? 0;
           const ans = prompter.confirm(`Pull ${n} new commit${n === 1 ? "" : "s"} from origin?`);
-          log({ event: "prompt", step: "workspace-pull", answer: ans ? "yes" : "no" });
+          log({ event: "prompt", step: "context-workspace-pull", answer: ans ? "yes" : "no" });
           if (ans) {
             const r = pullFn(dest);
-            if (r.ok) { summary.successes.push(`workspace pulled → ${dest}`); log({ event: "step", step: "workspace-pull", outcome: "ok" }); }
-            else { summary.failures.push({ item: `workspace ${dest}`, error: r.error ?? "pull failed" }); log({ event: "step", step: "workspace-pull", outcome: "failed" }); }
+            if (r.ok) { summary.successes.push(`context workspace pulled → ${dest}`); log({ event: "step", step: "context-workspace-pull", outcome: "ok" }); }
+            else { summary.failures.push({ item: `context workspace ${dest}`, error: r.error ?? "pull failed" }); log({ event: "step", step: "context-workspace-pull", outcome: "failed" }); }
           }
         }
       }
 
-      // Offer to open Claude Code whenever there's a usable workspace dir — freshly
+      // Offer to open Claude Code whenever there's a usable context workspace dir — freshly
       // cloned OR already present. Only a hard clone failure leaves nothing to open.
       if (haveDir) {
         recordFn(dest);

@@ -19,7 +19,7 @@ Every team gets a row in the "Start here" table in `context/README.md`, and
 ## Edit a skill or the member context
 
 Skills live in [`context/skills/`](context/skills/README.md), one folder per skill
-with a `SKILL.md`. The member workspace's instructions are in
+with a `SKILL.md`. The context workspace's instructions are in
 [`context/CLAUDE.md`](context/CLAUDE.md).
 
 - Point at sources. Don't copy facts: the skills look up people, repos, and docs live,
@@ -27,11 +27,22 @@ with a `SKILL.md`. The member workspace's instructions are in
 - `disable-model-invocation: true` in a skill's frontmatter makes it run only when
   someone types `/<name>` (`ner-onboard` does this).
 - Members get your change after the next release and `ner-jarvis update`. The
-  workspace (`ner-jarvis open`) updates as soon as your PR merges.
+  context workspace (`ner-jarvis open`) updates as soon as your PR merges.
 
-**Never commit to `ner-jarvis-context`.** It's a read-only mirror. On every push to
-`main` that touches `context/`, `publish-context.yml` publishes the folder there
-with `git subtree split`, and a direct commit there breaks the next publish.
+### How `context/` reaches members
+
+Branch **`context-workspace`** has `context/` as its root. Members clone only that branch, so
+their clone holds just the context files and none of the maintainer files at this
+repo's root. `sync-context-workspace.yml` keeps the two in sync on every push to `main` or
+`context-workspace`, using the same two subtree merges as Delphi:
+
+- **refresh:** main → `context-workspace`.
+- **propose:** `context-workspace` → a `propose/context-workspace` PR into `main`, checked first.
+
+You can edit on either side. If a sync reports a conflict, merge `main` into
+`context-workspace` in a PR. `.github/workflows/sync-context-workspace.yml` has an identical copy at
+`context/.github/workflows/` (CI checks they match), because GitHub runs a push's
+workflow from the pushed branch.
 
 ## Work on the CLI
 

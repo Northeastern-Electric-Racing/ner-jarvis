@@ -6,7 +6,11 @@
 # but the standalone test step needs the explicit embed first.)
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches-ignore: [context-workspace] # just context/; the sync workflow covers it
+  pull_request:
+    branches: [main]
 
 jobs:
   test:
@@ -35,6 +39,11 @@ jobs:
       # context/README.md's "Start here" table is generated from roster.json.
       - name: Check context README is in sync with the roster
         run: bun run sync:context --check
+
+      # The context-workspace branch needs its own copy of the sync workflow (see sync-context-workspace.yml).
+      - name: Check the context workspace's sync workflow matches main's
+        shell: bash
+        run: cmp ../.github/workflows/sync-context-workspace.yml ../context/.github/workflows/sync-context-workspace.yml
 
       # --timeout: the default 5s is too tight on windows-latest, where each
       # `claude` spawn costs a few hundred ms and a full setup run makes dozens.

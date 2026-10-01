@@ -15,7 +15,7 @@ import { autoPrompter, ttyPrompter } from "./core/prompt";
 const HELP = `ner-jarvis — configure Claude Code for Northeastern Electric Racing
 
 Usage:
-  ner-jarvis [setup] [name…]     install skills, connect sources, clone the workspace
+  ner-jarvis [setup] [name…]     install skills, connect sources, clone the context workspace
                                  + open Claude Code (interactive by default on a TTY)
   ner-jarvis open                clone/refresh the NER context workspace and open
                                  Claude Code in it

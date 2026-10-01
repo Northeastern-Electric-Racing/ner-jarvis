@@ -140,13 +140,13 @@ test("setup: preflight fails (claude missing) → failures recorded, no state wr
   });
 });
 
-// fixturePayload has no workspace; this adds one for the clone/open tests.
-const withWorkspace = (): EmbeddedPayload => ({
+// fixturePayload has no context workspace; this adds one for the clone/open tests.
+const withContextWorkspace = (): EmbeddedPayload => ({
   ...fixturePayload(),
-  workspace: { repo: "https://example.test/repo.git", dirName: "ner-jarvis" },
+  contextWorkspace: { repo: "https://example.test/repo.git", dirName: "ner-jarvis" },
 });
 
-// Prompts on a full run (no workspace): skills, then one per source (slack, atlassian, github).
+// Prompts on a full run (no context workspace): skills, then one per source (slack, atlassian, github).
 
 // Scenario 3: interactive — declining skills installs none but still connects sources.
 test("interactive: declining skills installs none, still connects confirmed sources", () => {
@@ -174,16 +174,16 @@ test("interactive: declining one source skips only that source", () => {
   });
 });
 
-// Scenario 5: --yes clones the workspace to cwd and opens Claude Code without prompting.
-test("--yes clones workspace to cwd + opens Claude Code; injected prompter never read", () => {
+// Scenario 5: --yes clones the context workspace to cwd and opens Claude Code without prompting.
+test("--yes clones context workspace to cwd + opens Claude Code; injected prompter never read", () => {
   withTempEnv((home) => {
     const clone: string[][] = [];
     const open: string[] = [];
     let globalAdded = false;
     const baseCwd = join(home, "work");
-    setup(withWorkspace(), { targets: [], force: false, dryRun: false, yes: true }, {
+    setup(withContextWorkspace(), { targets: [], force: false, dryRun: false, yes: true }, {
       prompter: throwingPrompter as any, // proves --yes uses the auto prompter, not this
-      cloneWorkspace: (repo, dest) => { clone.push([repo, dest]); return { ok: true, dest }; },
+      cloneContextWorkspace: (repo, dest) => { clone.push([repo, dest]); return { ok: true, dest }; },
       openClaude: (dir) => { open.push(dir); return { code: 0, stdout: "", stderr: "" }; },
       addGlobalContext: () => { globalAdded = true; return { changed: true, path: "x" }; },
       cwd: baseCwd,
@@ -197,17 +197,17 @@ test("--yes clones workspace to cwd + opens Claude Code; injected prompter never
   });
 });
 
-// Scenario 5b (regression): when the workspace already exists, status drives the
+// Scenario 5b (regression): when the context workspace already exists, status drives the
 // flow — NEVER re-clone — but setup must STILL offer to open Claude Code in it.
-test("--yes with an already-present, up-to-date workspace: no clone, still opens Claude Code", () => {
+test("--yes with an already-present, up-to-date contextWorkspace: no clone, still opens Claude Code", () => {
   withTempEnv((home) => {
     const open: string[] = [];
     let cloneCalled = false;
     const baseCwd = join(home, "work");
-    setup(withWorkspace(), { targets: [], force: false, dryRun: false, yes: true }, {
+    setup(withContextWorkspace(), { targets: [], force: false, dryRun: false, yes: true }, {
       prompter: throwingPrompter as any,
-      cloneWorkspace: () => { cloneCalled = true; return { ok: false, dest: "" }; },
-      workspaceStatus: () => ({ state: "up-to-date", behind: 0, ahead: 0, dirty: false }),
+      cloneContextWorkspace: () => { cloneCalled = true; return { ok: false, dest: "" }; },
+      contextWorkspaceStatus: () => ({ state: "up-to-date", behind: 0, ahead: 0, dirty: false }),
       openClaude: (d) => { open.push(d); return { code: 0, stdout: "", stderr: "" }; },
       addGlobalContext: () => ({ changed: false, path: "x", skipped: "already present" }),
       cwd: baseCwd,
@@ -218,18 +218,18 @@ test("--yes with an already-present, up-to-date workspace: no clone, still opens
   });
 });
 
-// Scenario 5d: a present workspace that is behind origin AND clean → offer a
-// fast-forward pull; on yes, pullWorkspace runs and it's recorded as a success.
-test("--yes with a behind-but-clean workspace pulls (fast-forward) then opens", () => {
+// Scenario 5d: a present context workspace that is behind origin AND clean → offer a
+// fast-forward pull; on yes, pullContextWorkspace runs and it's recorded as a success.
+test("--yes with a behind-but-clean context workspace pulls (fast-forward) then opens", () => {
   withTempEnv((home) => {
     const pulled: string[] = [];
     const open: string[] = [];
     const baseCwd = join(home, "work");
-    const summary = setup(withWorkspace(), { targets: [], force: false, dryRun: false, yes: true }, {
+    const summary = setup(withContextWorkspace(), { targets: [], force: false, dryRun: false, yes: true }, {
       prompter: throwingPrompter as any,
-      cloneWorkspace: () => ({ ok: false, dest: "" }),
-      workspaceStatus: () => ({ state: "behind-clean", behind: 2, ahead: 0, dirty: false }),
-      pullWorkspace: (d) => { pulled.push(d); return { ok: true }; },
+      cloneContextWorkspace: () => ({ ok: false, dest: "" }),
+      contextWorkspaceStatus: () => ({ state: "behind-clean", behind: 2, ahead: 0, dirty: false }),
+      pullContextWorkspace: (d) => { pulled.push(d); return { ok: true }; },
       openClaude: (d) => { open.push(d); return { code: 0, stdout: "", stderr: "" }; },
       addGlobalContext: () => ({ changed: false, path: "x", skipped: "already present" }),
       cwd: baseCwd,
@@ -237,22 +237,22 @@ test("--yes with a behind-but-clean workspace pulls (fast-forward) then opens", 
     });
     expect(pulled).toEqual([join(baseCwd, "ner-jarvis")]);
     expect(open).toEqual([join(baseCwd, "ner-jarvis")]);
-    expect(summary.successes.some((s) => s.startsWith("workspace pulled"))).toBe(true);
+    expect(summary.successes.some((s) => s.startsWith("context workspace pulled"))).toBe(true);
   });
 });
 
-// Scenario 5e: a present workspace behind origin but with local edits → NEVER
+// Scenario 5e: a present context workspace behind origin but with local edits → NEVER
 // pull (would risk the onboardee's work), even under --yes. Still opens.
-test("--yes with a behind-but-DIRTY workspace never pulls, still opens", () => {
+test("--yes with a behind-but-DIRTY context workspace never pulls, still opens", () => {
   withTempEnv((home) => {
     let pullCalled = false;
     const open: string[] = [];
     const baseCwd = join(home, "work");
-    setup(withWorkspace(), { targets: [], force: false, dryRun: false, yes: true }, {
+    setup(withContextWorkspace(), { targets: [], force: false, dryRun: false, yes: true }, {
       prompter: throwingPrompter as any,
-      cloneWorkspace: () => ({ ok: false, dest: "" }),
-      workspaceStatus: () => ({ state: "behind-dirty", behind: 3, ahead: 0, dirty: true }),
-      pullWorkspace: () => { pullCalled = true; return { ok: true }; },
+      cloneContextWorkspace: () => ({ ok: false, dest: "" }),
+      contextWorkspaceStatus: () => ({ state: "behind-dirty", behind: 3, ahead: 0, dirty: true }),
+      pullContextWorkspace: () => { pullCalled = true; return { ok: true }; },
       openClaude: (d) => { open.push(d); return { code: 0, stdout: "", stderr: "" }; },
       addGlobalContext: () => ({ changed: false, path: "x", skipped: "already present" }),
       cwd: baseCwd,
@@ -268,25 +268,25 @@ test("--yes with a failed clone does not open Claude Code", () => {
   withTempEnv((home) => {
     const open: string[] = [];
     const baseCwd = join(home, "work");
-    const summary = setup(withWorkspace(), { targets: [], force: false, dryRun: false, yes: true }, {
+    const summary = setup(withContextWorkspace(), { targets: [], force: false, dryRun: false, yes: true }, {
       prompter: throwingPrompter as any,
-      cloneWorkspace: (_repo, dest) => ({ ok: false, dest, error: "git clone failed (exit 1)" }),
+      cloneContextWorkspace: (_repo, dest) => ({ ok: false, dest, error: "git clone failed (exit 1)" }),
       openClaude: (d) => { open.push(d); return { code: 0, stdout: "", stderr: "" }; },
       addGlobalContext: () => ({ changed: false, path: "x", skipped: "already present" }),
       cwd: baseCwd,
       isTTY: false,
     });
     expect(open).toEqual([]); // nothing to open
-    expect(summary.failures.some((f) => f.item.includes("workspace"))).toBe(true);
+    expect(summary.failures.some((f) => f.item.includes("context workspace"))).toBe(true);
   });
 });
 
 // Scenario 6: minimal (no TTY, no --yes) keeps the legacy flow — never clones/opens.
-test("minimal mode: legacy converge; workspace clone/open never called", () => {
+test("minimal mode: legacy converge; context workspace clone/open never called", () => {
   withTempEnv(() => {
     let cloned = false, opened = false;
-    setup(withWorkspace(), { targets: [], force: false, dryRun: false, yes: false }, {
-      cloneWorkspace: () => { cloned = true; return { ok: true, dest: "" }; },
+    setup(withContextWorkspace(), { targets: [], force: false, dryRun: false, yes: false }, {
+      cloneContextWorkspace: () => { cloned = true; return { ok: true, dest: "" }; },
       openClaude: () => { opened = true; return { code: 0, stdout: "", stderr: "" }; },
       isTTY: false,
     });

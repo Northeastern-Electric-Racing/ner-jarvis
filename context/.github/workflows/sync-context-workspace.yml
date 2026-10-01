@@ -1,0 +1,40 @@
+# Keeps context/ on main and branch context-workspace (root = context/) in sync; see
+# .github/scripts/sync-context-workspace.sh. This file is at main's root and, identically, at
+# context/.github/workflows/ so the context-workspace branch has it too (GitHub runs a push's workflow from the
+# pushed commit). The sync always runs from main. Pushes and PRs made with GITHUB_TOKEN trigger
+# no workflows: no loops, and the proposal PR is checked by the script itself.
+name: Sync context workspace
+
+on:
+  push:
+    branches: [main, context-workspace]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    # Only here: this file also lands in context-workspace clones and the old mirror.
+    if: github.repository == 'Northeastern-Electric-Racing/ner-jarvis'
+    runs-on: ubuntu-latest
+    concurrency: sync-context-workspace
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          .github/scripts/sync-context-workspace.sh
