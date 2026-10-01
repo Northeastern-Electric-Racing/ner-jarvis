@@ -1,6 +1,6 @@
 {
   "name": "ner-jarvis",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "CLI that configures Claude Code for Northeastern Electric Racing's software team — installs NER's skills and connects its data sources.",
   "type": "module",
   "bin": {
