@@ -1,49 +1,34 @@
-# ner-jarvis — working in this repo
+# NER context workspace
 
-Two folders. Keep them separate:
-
-- **`context/`** is member-facing: `CLAUDE.md`, `README.md`, and the NER skills
-  (`skills/`, including `ner-roster/roster.json`). Branch `context-workspace` has it as its
-  root. Members clone that branch with `ner-jarvis open`, so nothing at this repo's
-  root (this file included) reaches them.
-- **`cli/`** is the installer (Bun, `node:` builtins only). Its build embeds
-  `context/skills/`.
-
-To answer questions *about NER* rather than about this code, follow
-[`context/CLAUDE.md`](context/CLAUDE.md) and the skills. Don't add NER facts here.
+Home base for a new Northeastern Electric Racing (NER) software member. The real
+knowledge lives in the **NER skills** (source in `skills/`, installed to
+`~/.claude/skills/` by `ner-jarvis setup`), which resolve people, repos, and docs
+live, so nothing checked in here can go stale.
 
 ## Rules
 
+- For anything NER — onboarding, dev-environment setup, understanding a repo or its
+  code, conventions/docs, who owns what, how to escalate — reach for the NER skills
+  rather than answering from memory, and resolve people/ownership **live**.
+- New members: point them to their team's start-here and FAQ pages before answering
+  from scratch. Those pages are listed in the "Start here" table in `README.md` and in
+  the `onboarding` field of each subteam in the roster. For a guided walkthrough, tell
+  them to run `/ner-onboard` (it's user-invoked only).
 - Use the `gh` CLI for GitHub.
-- `context/` ⇄ `context-workspace` sync is `.github/scripts/sync-context-workspace.sh` (refresh and
-  propose subtree merges, as in Delphi). Keep `.github/workflows/sync-context-workspace.yml`
-  identical to `context/.github/workflows/sync-context-workspace.yml`.
-- `ner-jarvis-context` is the retired mirror that v0.1.0–v0.1.2 still clone.
-  `publish-context.yml` keeps it updated until it's archived. Never commit there.
-- `context/README.md`'s "Start here" table is generated from `roster.json`. Edit the
-  roster, then run `bun run sync:context` in `cli/`.
-- `cli/behavior.md` is the authoritative spec. Update it together with any change in
-  behavior.
-- Persisted shapes (state, undo records) are versioned. Any change needs a migration
-  (see `cli/docs/adr/0004-versioned-rollback-and-migrations.md`).
-- Dev loop: `cd cli && bun install && bun run embed && bun test`.
+- NER's Confluence is mid-restructure. When a page reads as current but acting on it
+  would be wrong, record it with **ner-flag-stale**. A doc describing how something
+  was built before is history, not a problem — leave it be.
 
-Task guides (adding a team, editing skills, releasing) are in
-[`CONTRIBUTING.md`](CONTRIBUTING.md).
+## Resolving ownership
 
-## History
+Sources answer different questions. Do not mix them up:
 
-- This repo was `ner-jarvis-cli`. GitHub redirects the old URLs.
-- `bracyw/ner-onboarding-agent` was the original home. v0.1.0's release assets and
-  the retired Claude-Desktop ZIP pipeline still live there.
-- `bracyw/ner-jarvis` was the context workspace's predecessor. Leave it: v0.1.0 binaries have
-  that URL embedded.
-- The root `.claude/skills/` holds dev tooling for this repo and is not shipped.
+- `roster.json` is **structure** — who nominally holds a role. It is a dated
+  snapshot (`asOf`), authoritative for org taxonomy, not for who is active today.
+- GitHub is **activity** — who actually commits and reviews. Activity is not a
+  title, and a title is not activity.
 
-## Agent skills
-
-- **Issue tracker:** GitHub issues on `Northeastern-Electric-Racing/ner-jarvis`. See
-  `cli/docs/agents/issue-tracker.md`.
-- **Triage labels:** `needs-triage`, `needs-info`, `ready-for-agent`,
-  `ready-for-human`, `wontfix`. See `cli/docs/agents/triage-labels.md`.
-- **Domain docs:** `cli/CONTEXT.md` + `cli/docs/adr/`. See `cli/docs/agents/domain.md`.
+Never state a commit, review, or recency claim you have not counted. Run the query
+and cite the number; "X is the main contributor" without a count is a guess. If
+structure and activity disagree, report **both with their dates** rather than
+picking one — the disagreement is usually the real answer.

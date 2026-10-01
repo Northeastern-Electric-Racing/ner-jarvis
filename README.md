@@ -1,51 +1,50 @@
-# ner-jarvis
+# NER context workspace
 
-**One command to set up Claude Code for Northeastern Electric Racing.** It installs
-the NER skills, connects Slack and Atlassian, and opens Claude in a context workspace where
-you can ask anything about NER software.
+The **NER software context workspace** — your home base while you get set up on
+the software team. `ner-jarvis open` clones it and opens Claude Code here;
+`ner-jarvis setup` installs the NER skills and data sources.
 
-## Install
+> This folder is the [`context-workspace`](https://github.com/Northeastern-Electric-Racing/ner-jarvis/tree/context-workspace)
+> branch of `ner-jarvis`, kept in sync with `context/` on `main`. To change it, open a
+> PR into `context-workspace` (or edit `context/` on `main`). CI proposes changes made here to
+> `main` for review.
 
-You don't need a GitHub account, and if you don't have Claude Code yet, setup offers
-to install it.
+Everything Claude needs to answer NER questions is here: its instructions in
+[`CLAUDE.md`](CLAUDE.md) and the NER [`skills/`](skills/) (which `ner-jarvis setup`
+installs). The skills resolve people, repos, and docs live, so nothing here can go
+stale.
 
-**macOS / Linux**
+## Start here
 
-```sh
-case "$(uname -s)" in Darwin) os=darwin;; Linux) os=linux;; *) echo "unsupported"; exit 1;; esac
-case "$(uname -m)" in arm64|aarch64) arch=arm64;; x86_64|amd64) arch=x64;; *) echo "unsupported"; exit 1;; esac
-curl -fsSL -o ner-jarvis \
-  "https://github.com/Northeastern-Electric-Racing/ner-jarvis/releases/latest/download/ner-jarvis-bun-$os-$arch"
-chmod +x ner-jarvis && ./ner-jarvis
-```
+Find your team's onboarding page. For a guided walkthrough, type `/ner-onboard` in
+Claude Code.
 
-**Windows (PowerShell)**
-
-```powershell
-Invoke-WebRequest -OutFile ner-jarvis.exe `
-  "https://github.com/Northeastern-Electric-Racing/ner-jarvis/releases/latest/download/ner-jarvis-bun-windows-x64.exe"
-.\ner-jarvis.exe
-```
-
-Setup asks before each step. When it finishes, sign in to Slack and Atlassian (run
-`/mcp` in Claude Code) and GitHub (`gh auth login`).
-
-## Then
-
-- **Start onboarding:** run `ner-jarvis open`, then type `/ner-onboard`.
-- **Something's off:** run `ner-jarvis doctor`.
-
-## Go deeper
-
-| If you want to… | Read |
-|---|---|
-| Find your team's onboarding pages | [`context/README.md`](context/README.md) |
-| See every command, flag, and troubleshooting step | [`cli/README.md`](cli/README.md) |
-| Add your team, edit a skill, or cut a release | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
-
-## What's in this repo
-
-| Folder | For | What's in it |
+<!-- start-here:begin (generated from roster.json — edit there) -->
+| Team | Onboarding | FAQ |
 |---|---|---|
-| [`context/`](context/) | Members | Everything Claude needs to answer NER questions: `CLAUDE.md` and the NER [skills](context/skills/). Members clone it as the [`context-workspace`](https://github.com/Northeastern-Electric-Racing/ner-jarvis/tree/context-workspace) branch. |
-| [`cli/`](cli/) | Maintainers | The `ner-jarvis` installer. Its build embeds `context/skills/`. |
+| Application Software | [Start here](https://nerdocs.atlassian.net/wiki/spaces/NER/pages/2199420933) | [FAQ](https://nerdocs.atlassian.net/wiki/spaces/NER/pages/2198863891) |
+<!-- start-here:end -->
+
+Team not listed? Run `/ner-onboard` and it will find the current pages.
+
+## Try it
+
+> "Walk me through setting up my dev environment."
+> "What does <repo> do, and who owns it?"
+
+`ner-jarvis doctor` checks that your skills and data sources are healthy.
+
+## When a doc is wrong
+
+NER's Confluence is mid-restructure, so you'll hit pages that read as current and
+aren't. Tell Claude and it records the page with the **ner-flag-stale** skill, or run
+`ner-jarvis stale add` yourself. Reports stay on your machine
+(`~/.claude/ner-jarvis/stale.jsonl`) — nothing is sent anywhere.
+
+```bash
+ner-jarvis stale list       # what you've recorded
+ner-jarvis stale export     # paste-ready markdown for the team channel
+```
+
+A page counts as stale when someone could mistake it for current *and* acting on it
+would be wrong.
