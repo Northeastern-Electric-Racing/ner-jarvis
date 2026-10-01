@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { resolveWorkspaceDest, cloneWorkspace, openClaude, workspaceStatus, pullWorkspace } from "./workspace";
+import { resolveWorkspaceDest, cloneWorkspace, openClaude, workspaceStatus, pullWorkspace, repoSlug } from "./workspace";
 import { writeShim } from "../../test/helpers";
 
 const temps: string[] = [];
@@ -139,4 +139,11 @@ test("openClaude launches the claude bin with cwd = the given dir", () => {
     if (saved === undefined) delete process.env.NER_JARVIS_CLAUDE_BIN;
     else process.env.NER_JARVIS_CLAUDE_BIN = saved;
   }
+});
+
+test("repoSlug matches https and ssh forms of the same repo", () => {
+  expect(repoSlug("https://github.com/Org/Repo.git")).toBe("org/repo");
+  expect(repoSlug("git@github.com:Org/Repo.git")).toBe("org/repo");
+  expect(repoSlug("https://github.com/Org/Repo/")).toBe("org/repo");
+  expect(repoSlug("https://github.com/Org/Repo-context.git")).not.toBe("org/repo");
 });

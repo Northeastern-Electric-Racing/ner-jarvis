@@ -47,5 +47,5 @@ Setup asks before each step. When it finishes, sign in to Slack and Atlassian (r
 
 | Folder | For | What's in it |
 |---|---|---|
-| [`context/`](context/) | Members | Everything Claude needs to answer NER questions: `CLAUDE.md` and the NER [skills](context/skills/). Published as [`ner-jarvis-context`](https://github.com/Northeastern-Electric-Racing/ner-jarvis-context). |
+| [`context/`](context/) | Members | Everything Claude needs to answer NER questions: `CLAUDE.md` and the NER [skills](context/skills/). Members get it as the [`ws/context`](https://github.com/Northeastern-Electric-Racing/ner-jarvis/tree/ws/context) branch. |
 | [`cli/`](cli/) | Maintainers | The `ner-jarvis` installer. Its build embeds `context/skills/`. |

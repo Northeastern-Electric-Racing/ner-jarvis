@@ -10,7 +10,7 @@ dist/
 build/
 
 # Generated at build time by `bun run embed` — never committed.
-src/payload.generated.ts
+cli/src/payload.generated.ts
 
 # Node
 node_modules/

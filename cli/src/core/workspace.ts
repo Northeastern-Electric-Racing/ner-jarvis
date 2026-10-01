@@ -32,18 +32,31 @@ export function recordWorkspacePath(dest: string): void {
   writeFileSync(workspaceFile(), JSON.stringify({ dest }, null, 2) + "\n");
 }
 
+/** `owner/repo` from a GitHub https or ssh URL, lowercased, so remotes compare by identity. */
+export function repoSlug(url: string): string {
+  const m = url.trim().match(/github\.com[:/]+(.+?)(?:\.git)?\/?$/i);
+  return (m?.[1] ?? url.trim()).toLowerCase();
+}
+
+/** The `origin` URL of the clone at `dest`, or `undefined` if there isn't one. Never throws. */
+export function workspaceOrigin(dest: string): string | undefined {
+  const r = git(dest, ["remote", "get-url", "origin"]);
+  return r.ok && r.out ? r.out : undefined;
+}
+
 /**
- * Clone `repo` into `dest` with `git clone`. **Non-destructive:** if `dest` already
+ * Clone `repo` into `dest` with `git clone` (only `branch`, when given). **Non-destructive:** if `dest` already
  * exists it is left untouched (no git runs) and reported as skipped. Never throws;
  * a git failure is returned as `{ ok:false, error }` with no secret-bearing output.
  */
-export function cloneWorkspace(repo: string, dest: string): CloneResult {
+export function cloneWorkspace(repo: string, dest: string, branch?: string): CloneResult {
   if (existsSync(dest)) {
     return { ok: false, dest, skipped: `${dest} already exists — left untouched` };
   }
   try {
     // stdio inherited so the user sees clone progress; env passed explicitly (Bun).
-    execFileSync("git", ["clone", repo, dest], { stdio: "inherit", env: process.env });
+    const only = branch ? ["--branch", branch, "--single-branch"] : [];
+    execFileSync("git", ["clone", ...only, repo, dest], { stdio: "inherit", env: process.env });
     return { ok: true, dest };
   } catch (e: any) {
     return { ok: false, dest, error: `git clone failed (exit ${e?.status ?? 1})` };

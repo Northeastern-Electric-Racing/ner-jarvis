@@ -20,7 +20,8 @@
     }
   ],
   "workspace": {
-    "repo": "https://github.com/Northeastern-Electric-Racing/ner-jarvis-context.git",
-    "dirName": "ner-jarvis-context"
+    "repo": "https://github.com/Northeastern-Electric-Racing/ner-jarvis.git",
+    "dirName": "ner-context",
+    "branch": "ws/context"
   }
 }

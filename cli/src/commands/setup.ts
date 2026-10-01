@@ -35,7 +35,7 @@ export interface SetupOpts {
 /** Side-effecting collaborators, injectable for tests. Real defaults used in prod. */
 export interface SetupDeps {
   prompter?: Prompter;
-  cloneWorkspace?: (repo: string, dest: string) => CloneResult;
+  cloneWorkspace?: (repo: string, dest: string, branch?: string) => CloneResult;
   workspaceStatus?: (dest: string) => WorkspaceStatus;
   pullWorkspace?: (dest: string) => { ok: boolean; error?: string };
   openClaude?: (dir: string) => RunResult;
@@ -300,7 +300,7 @@ export function setup(payload: EmbeddedPayload, opts: SetupOpts, deps: SetupDeps
       const status = wsStatusFn(dest);
       let haveDir = false;
       if (status.state === "absent") {
-        const clone = cloneFn(ws.repo, dest);
+        const clone = cloneFn(ws.repo, dest, ws.branch);
         if (clone.ok) {
           summary.successes.push(`workspace cloned → ${dest}`);
           log({ event: "step", step: "clone", outcome: "ok", dest });

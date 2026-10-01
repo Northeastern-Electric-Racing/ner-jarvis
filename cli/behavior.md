@@ -148,10 +148,13 @@ sources (slack, atlassian) authenticate on first use.
     reports" below.
 - `ner-jarvis open` — get into the context workspace in one step. Uses the path
   recorded in `~/.claude/ner-jarvis/workspace.json` (written by `setup` and `open`),
-  or asks for a parent directory and appends `workspace.dirName`. Then: absent →
-  clone `workspace.repo`; behind origin **and** clean → `git pull --ff-only` without
-  prompting; any other git state → report it and open as-is (never pulls over local
-  work). Finally launches Claude Code there. A failed clone opens nothing and exits
+  or asks for a parent directory and appends `workspace.dirName`. If the recorded clone's
+  `origin` is a different repo (the retired `ner-jarvis-context` mirror), it's left
+  untouched and reported, and the workspace goes to `workspace.dirName` beside it. Then:
+  absent → `git clone` `workspace.repo`, only `workspace.branch` when set
+  (`--branch <b> --single-branch`); behind origin **and** clean → `git pull --ff-only`
+  without prompting; any other git state → report it and open as-is (never pulls over
+  local work). Finally launches Claude Code there. A failed clone opens nothing and exits
   non-zero. `--dry-run` touches nothing.
 - Flags: `--yes`/`-y` (assume "yes" to every prompt — a non-interactive full run),
   `--force` (overwrite items we installed but the user has since edited),

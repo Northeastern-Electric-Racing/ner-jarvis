@@ -3,8 +3,9 @@
 Two folders. Keep them separate:
 
 - **`context/`** is member-facing: `CLAUDE.md`, `README.md`, and the NER skills
-  (`skills/`, including `ner-roster/roster.json`). It's published as the
-  `ner-jarvis-context` repo, which members clone with `ner-jarvis open`.
+  (`skills/`, including `ner-roster/roster.json`). Branch `ws/context` has it as its
+  root. Members clone that branch with `ner-jarvis open`, so nothing at this repo's
+  root (this file included) reaches them.
 - **`cli/`** is the installer (Bun, `node:` builtins only). Its build embeds
   `context/skills/`.
 
@@ -14,8 +15,11 @@ To answer questions *about NER* rather than about this code, follow
 ## Rules
 
 - Use the `gh` CLI for GitHub.
-- Never commit to `Northeastern-Electric-Racing/ner-jarvis-context`. It's a mirror of
-  `context/` published by `.github/workflows/publish-context.yml`.
+- `context/` ⇄ `ws/context` sync is `.github/scripts/sync-workspace.sh` (refresh and
+  propose subtree merges, as in Delphi). Keep `.github/workflows/sync-workspace.yml`
+  identical to `context/.github/workflows/sync-workspace.yml`.
+- `ner-jarvis-context` is the retired mirror that v0.1.0–v0.1.2 still clone.
+  `publish-context.yml` keeps it updated until it's archived. Never commit there.
 - `context/README.md`'s "Start here" table is generated from `roster.json`. Edit the
   roster, then run `bun run sync:context` in `cli/`.
 - `cli/behavior.md` is the authoritative spec. Update it together with any change in

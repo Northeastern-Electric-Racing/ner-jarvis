@@ -29,9 +29,20 @@ with a `SKILL.md`. The member workspace's instructions are in
 - Members get your change after the next release and `ner-jarvis update`. The
   workspace (`ner-jarvis open`) updates as soon as your PR merges.
 
-**Never commit to `ner-jarvis-context`.** It's a read-only mirror. On every push to
-`main` that touches `context/`, `publish-context.yml` publishes the folder there
-with `git subtree split`, and a direct commit there breaks the next publish.
+### How `context/` reaches members
+
+Branch **`ws/context`** has `context/` as its root. Members clone only that branch, so
+their workspace holds just the context files and none of the maintainer files at this
+repo's root. `sync-workspace.yml` keeps the two in sync on every push to `main` or
+`ws/context`, using the same two subtree merges as Delphi:
+
+- **refresh:** main → `ws/context`.
+- **propose:** `ws/context` → a `propose/context` PR into `main`, checked first.
+
+You can edit on either side. If a sync reports a conflict, merge `main` into
+`ws/context` in a PR. `.github/workflows/sync-workspace.yml` has an identical copy at
+`context/.github/workflows/` (CI checks they match), because GitHub runs a push's
+workflow from the pushed branch.
 
 ## Work on the CLI
 

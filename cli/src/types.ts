@@ -27,6 +27,7 @@ export interface EmbeddedSkill {
 export interface Workspace {
   repo: string;    // git URL to clone (non-secret)
   dirName: string; // directory name to clone into under the chosen base dir
+  branch?: string; // clone only this branch (e.g. ws/context, whose root is the workspace folder)
 }
 
 export interface EmbeddedPayload {
