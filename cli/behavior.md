@@ -1,8 +1,8 @@
 # ner-jarvis — behavior contract
 
-Language-agnostic behavior contract for `ner-jarvis`. The design spec is
-`docs/superpowers/specs/2026-06-28-ner-jarvis-cli-design.md`; the implementation
-plan is `docs/superpowers/plans/2026-06-28-ner-jarvis.md`.
+Language-agnostic behavior contract for `ner-jarvis`. The original design spec and
+implementation plans are in git history (removed from `docs/superpowers/` once
+completed); the decisions that still apply are in `docs/adr/`.
 
 This file records the **verified `claude` CLI surface** the tool depends on and
 the **source facts** it ships, followed by ner-jarvis's own contract: its command
@@ -140,7 +140,7 @@ sources (slack, atlassian) authenticate on first use.
   accept `--json`. Exits non-zero when a report can't be built or an id is unknown.
   - `add` flags: `--url` (required), `--title`, `--kind` (`confluence|github|slack|
     repo|skill|other`), `--wrong` (required — a bare link is rejected), `--true`,
-    `--dimension` (1–8, the rubric in `docs/onboarding-staleness.md`; out-of-range
+    `--dimension` (1–8, the rubric in `docs/staleness-rubric.md`; out-of-range
     falls back to 3), `--successor`, `--verdict`, `--blocked`.
   - **Verdict is inferred from the successor check** unless `--verdict` overrides:
     a supplied `--successor` means `superseded`, its absence means `orphan-current`.

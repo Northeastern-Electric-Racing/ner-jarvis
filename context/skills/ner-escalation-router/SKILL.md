@@ -41,7 +41,8 @@ almost always "post in <channel>," with names as *context*:
 
 To name the channel, search NER's Slack live — it's the source of truth (channels
 get renamed and archived, and Confluence lags). If Slack isn't connected, fall
-back to the Confluence channel list and flag that it may be stale. Don't
+back to the roster's `channels` map or the dated list in
+`~/.claude/skills/ner-ask/reference.md`, and flag that it may be stale. Don't
 hard-code channel names.
 
 ## Rules

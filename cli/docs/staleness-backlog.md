@@ -1,53 +1,13 @@
-# NER Onboarding Staleness — Running List
+# Staleness backlog
 
-A living backlog of doc-vs-reality drift that NER's onboarding agent surfaces when
-it runs the skills against live Confluence / GitHub / Slack. Two kinds of item:
+Open doc-vs-reality drift found by running the NER skills against live Confluence,
+GitHub, and Slack (audits of 2026-07-13). Scored with the
+[staleness rubric](staleness-rubric.md). Severity **H/M/L**.
 
-- **`[repo:…]`** — ours to fix in *this* repo (`CLAUDE.md`, `skills/ner-roster/roster.json`, the skills).
-- **`[upstream:…]`** — stale in NER's own Confluence / Slack / repo READMEs; fixing needs edits over there.
+- **`[repo:…]`** — fix it in this repo (`context/` skills, `roster.json`).
+- **`[upstream:…]`** — stale in NER's own Confluence, Slack, or repo READMEs.
 
-**Grounding rule this list assumes:** `roster.json` (asOf *Fall 2026*) is the trustworthy
-structure source; where a doc disagrees with it, the doc is stale. People (not
-structure) still get reconciled against live GitHub committers.
-
-> **How this was built.** Six investigations, 2026-07-13: two mined onboarding
-> dry-runs (`bcc94626` = "I'm new"; `2babe2b6` = the FinishLine-misclassification
-> run) + four per-head-area live audits (App Software, Firmware, FinishLine,
-> Software Product) applying the 8-dimension rubric at the bottom of this file.
-> **To refresh:** re-run an onboarding dry-run, then re-dispatch the area audits;
-> append new findings here.
-
-**Legend:** severity **H/M/L** · provenance tags: `[AppSw] [FW] [FL] [SWProd] [setup-run] [fl-run] [confluence-sweep]`. (The Confluence dimension — previously blocked on auth — was swept read-only on 2026-07-13; see §F.)
-
----
-
-## A. `[repo:CLAUDE.md]` — the biggest bucket
-
-`CLAUDE.md` is the always-loaded context and is a full cycle behind `roster.json`
-on org, leads, and channels. Any agent leaning on it (rather than the roster) misroutes.
-
-### Org model & leadership — ✅ fixed in CLAUDE.md 2026-07-13
-- [x] **H** — Was three hard-coded tracks; now **four** subteams incl. **Software Product** (Head **Layla Sheikh**, Product Lead **Jiya Bhan**). `[SWProd]`
-- [x] **H** — FinishLine head → **Waverly Hassman** (was "Chris Pyle; Waverly incoming"). `[FL][setup-run]`
-- [x] **H** — Stale, self-contradicting Firmware sub-lead snapshot (mis-filed Surya under Argos, omitted ~7 leads, "Emulation Lead unconfirmed") **removed** — CLAUDE.md now points sub-leads at `roster.json` instead of an inline list that rots. `[FW][AppSw]`
-- [x] **M** — App-Software leads no longer inlined (were stale: Surya-under-Argos, missing Yash) — resolved by the same roster pointer. `[AppSw]`
-- [x] **M** — FinishLine tech-lead list no longer inlined — resolved by the roster pointer. `[FL]`
-- [x] **L** — CSE decided: **Chris Pyle** (roster `executiveBoard` → "Chief Software"; Software Charter 2026 corroborates him as doc owner). CLAUDE.md states Chris Pyle and flags the stale Peyton-McKee page. `[setup-run][fl-run][confluence-sweep]`
-
-### Repo glossary — ✅ fixed in CLAUDE.md 2026-07-13
-- [x] **H** — Split the fused **"Application Software / FinishLine track"** heading into distinct FinishLine / Application Software blocks. `[FL][AppSw][fl-run]`
-- [x] **H** — Added `h5-projects-rs`, `Salamander`, and `Pythia` (tagged **Firmware despite TypeScript**). `[FW][AppSw]`
-- [x] **M** — Moved `Nero-2.0` + `Ithaca` into Application Software; mapped the "Data Visualization" system → `Ithaca`. `[AppSw]`
-- [x] **M** — Noted the **MQTT→Zenoh** migration in the telemetry heading. `[FW]`
-- [x] **M** — Added `mqttui`. *(Minor forks — `probe-rs`, `zenoh-pico`, `nrc7292_sw_pkg`, `clang-format-action`, `gpsd_proto`, `LearningSessions` — intentionally left out to keep the always-loaded glossary lean; resolve live if needed.)* `[FW][FL]`
-- [x] **M** — De-staled the Simulation block ("currently empty" dropped; visibility-re-verify noted). `[setup-run]`
-- [x] **L** — Broadened `Argos` to "real-time data **processing** and visualization (Angular + Flutter + scylla-server + charybdis-schema)." `[AppSw]`
-- [x] **L** — Noted "Data Visualization" is a system (→ Ithaca) and `scylla`/`siren` are services, not repos. `[AppSw][FW]`
-
-### Slack channel list — ✅ fixed in CLAUDE.md 2026-07-13 (CLAUDE.md list only; READMEs are §D)
-- [x] **H** — Dropped archived **`#software_env-setup`** from CLAUDE.md → **`#tech-support`** (live setup/access replacement, created 2026-06-30). *(FinishLine README still references it — that's §D, upstream.)* `[AppSw][FW][FL][setup-run]`
-- [x] **H** — Dropped archived **`#access-requests`** (access folded into `#tech-support`). `[AppSw][FW][FL]`
-- [x] **M** — Added `#tech-support` and `#software_product`. *(Narrower channels — `#software_product-requests`, `#software_application-design`, `#github_firmware`, `#software_launchpad`, `#software_rules_dashboard` — intentionally not added to always-loaded context; agents resolve channels live.)* `[AppSw][FW][SWProd]`
+`roster.json` is the structure source of truth; where a doc disagrees, the doc is stale.
 
 ---
 
@@ -70,7 +30,6 @@ on org, leads, and channels. Any agent leaning on it (rather than the roster) mi
 ## C. `[repo:skill]` — the skills
 
 - [ ] **M** — `ner-onboard` lists Software Product as a Track but then routes everyone to code-track steps (env setup, "the Track's main repo", `ner-repo-explainer`). A **product joiner owns no repo** and dead-ends. Add a product branch (surface = FinishLine + roadmap + `#software_product`). `[SWProd]`
-- [ ] **L** — Skills are otherwise **clean**: grep confirms no hardcoded firmware/leadership/repo names; resolution is live + roster-driven, as intended. Keep it that way. `[FW]` *(verified-good)*
 
 ---
 
@@ -226,10 +185,7 @@ evergreen content must be evacuated to Shared Resources first; mid-season husks 
 a rule. Purpose + trigger not yet discussed. Six rules on the page are now five
 (triggers row deleted).
 
-**Two structural gaps (no page exists — itself the finding):**
-- [ ] **H** — **No current Application Software onboarding page.** The only
-  App-Software artifact is the punt (`538607622`); no "26-27"-style flow exists, so
-  new App-Software members have no landing path. `[AppSw][setup-run]`
+**Structural gap (no page exists — itself the finding):**
 - [ ] **M** — **No Software Product subteam page.** Layla Sheikh's Product subteam
   is defined only *inside* Software Charter 2026 ("Head of Product Management"). No
   "Product Team" page exists; the old Product docs (**Software Product Management**
@@ -257,23 +213,3 @@ a rule. Purpose + trigger not yet discussed. Six rules on the page are now five
 - `#s_embedded-software`, `#software`, `#software_pr-review`, `#software_finishline` are live and correctly listed.
 
 ---
-
-## The staleness rubric (8 dimensions — reusable anywhere)
-
-1. **Leadership currency** — heads/leads/CSE in docs vs live roster + GitHub committers.
-2. **Org-structure currency** — doc team/track boundaries vs roster subteams; merges/renames/new/dissolved; cross-page contradictions.
-3. **Doc recency & completeness** — lastModified age, year-stamped titles, empty/"ask your lead" pages, a track with no landing branch.
-4. **Glossary ⇄ GitHub drift (both ways)** — active repos missing from the glossary; glossary repos gone/archived/renamed; description/language/"empty-new" drift.
-5. **Dead links & version drift** — docs pointing at gone repos/channels/tools; stale version pins; baked-in bug workarounds.
-6. **Slack channel currency** — doc-named channels archived/renamed; live channels no doc mentions.
-7. **Onboarding-path viability** — a coherent, current, stack-appropriate getting-started path, or a dead-end / borrowed one.
-8. **Shipped grounding-truth drift** — `CLAUDE.md`, `roster.json`, skill glossary vs live.
-
-## Sources mined (2026-07-13)
-
-- Onboarding dry-run `bcc94626` ("I'm new" → Application Software) — `[setup-run]`
-- Onboarding dry-run `2babe2b6` (FinishLine-misclassification run) — `[fl-run]`
-- Area audits: Application Software `[AppSw]`, Firmware `[FW]`, FinishLine `[FL]`, Software Product `[SWProd]`
-- Confluence read-only page-sweep (~14 pages, IDs above) — `[confluence-sweep]`
-
-*Read-only audits; no NER systems or repos were modified.*

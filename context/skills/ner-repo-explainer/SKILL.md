@@ -10,7 +10,8 @@ via GitHub (https://github.com/Northeastern-Electric-Racing) — never from memo
 
 ## Steps
 
-1. **Find it.** Confirm it exists in the org. On a 404, say so and suggest
+1. **Find it.** Confirm it exists in the org (the dated repo glossary in
+   `~/.claude/skills/ner-ask/reference.md` helps with names and tracks). On a 404, say so and suggest
    checking spelling or org membership — don't describe a repo you can't read.
 2. **Purpose** — from the README and repo description. One or two sentences on
    what it is and where it fits.

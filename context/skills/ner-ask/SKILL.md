@@ -20,6 +20,9 @@ sees only what their accounts allow.
 - **GitHub** (https://github.com/Northeastern-Electric-Racing) — what code does,
   repo purpose (the README), file detail, recent activity (commits / CODEOWNERS),
   issues, PRs.
+- **Quick map** ([`reference.md`](reference.md)) — a dated glossary of the repos
+  members touch and the live Slack channels. Use it to know *what* to look up,
+  never as the citation.
 
 Org structure / "who leads what" → roster first, then reconcile live. Process →
 Confluence first; code or "who actually touches this" → GitHub first. Many
