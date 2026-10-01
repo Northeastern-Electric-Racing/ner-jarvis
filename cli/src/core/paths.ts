@@ -15,8 +15,8 @@ export function skillsDir(): string { return join(claudeHome(), "skills"); }
 export function nerJarvisHome(): string { return join(claudeHome(), "ner-jarvis"); }
 export function stateFile(): string { return join(nerJarvisHome(), "state.json"); }
 export function logFile(): string { return join(nerJarvisHome(), "log.jsonl"); }
-/** Where the member's workspace clone lives, recorded by setup/open: `~/.claude/ner-jarvis/workspace.json`. */
-export function workspaceFile(): string { return join(nerJarvisHome(), "workspace.json"); }
+/** Where the member's context repo clone lives, recorded by setup/open: `~/.claude/ner-jarvis/context-repo.json`. */
+export function contextRepoFile(): string { return join(nerJarvisHome(), "context-repo.json"); }
 /**
  * Member-filed stale-doc reports: `~/.claude/ner-jarvis/stale.jsonl`.
  *

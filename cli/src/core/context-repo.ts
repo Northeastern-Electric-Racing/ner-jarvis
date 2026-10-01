@@ -2,7 +2,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { baseCmd, type RunResult } from "./claude";
-import { workspaceFile } from "./paths";
+import { contextRepoFile } from "./paths";
 
 export interface CloneResult {
   ok: boolean;
@@ -11,25 +11,25 @@ export interface CloneResult {
   error?: string;   // reason git failed (never contains secrets)
 }
 
-/** Where the workspace repo lands: `<baseDir>/<dirName>`. Pure. */
-export function resolveWorkspaceDest(baseDir: string, dirName: string): string {
+/** Where the context repo lands: `<baseDir>/<dirName>`. Pure. */
+export function resolveContextRepoDest(baseDir: string, dirName: string): string {
   return join(baseDir, dirName);
 }
 
-/** The workspace path setup/open last recorded, or `undefined`. Never throws. */
-export function readWorkspacePath(): string | undefined {
+/** The context repo path setup/open last recorded, or `undefined`. Never throws. */
+export function readContextRepoPath(): string | undefined {
   try {
-    const dest = JSON.parse(readFileSync(workspaceFile(), "utf8"))?.dest;
+    const dest = JSON.parse(readFileSync(contextRepoFile(), "utf8"))?.dest;
     return typeof dest === "string" && dest.length > 0 ? dest : undefined;
   } catch {
     return undefined;
   }
 }
 
-/** Remember where the workspace lives so `ner-jarvis open` can find it again. */
-export function recordWorkspacePath(dest: string): void {
-  mkdirSync(dirname(workspaceFile()), { recursive: true });
-  writeFileSync(workspaceFile(), JSON.stringify({ dest }, null, 2) + "\n");
+/** Remember where the context repo lives so `ner-jarvis open` can find it again. */
+export function recordContextRepoPath(dest: string): void {
+  mkdirSync(dirname(contextRepoFile()), { recursive: true });
+  writeFileSync(contextRepoFile(), JSON.stringify({ dest }, null, 2) + "\n");
 }
 
 /** `owner/repo` from a GitHub https or ssh URL, lowercased, so remotes compare by identity. */
@@ -39,7 +39,7 @@ export function repoSlug(url: string): string {
 }
 
 /** The `origin` URL of the clone at `dest`, or `undefined` if there isn't one. Never throws. */
-export function workspaceOrigin(dest: string): string | undefined {
+export function contextRepoOrigin(dest: string): string | undefined {
   const r = git(dest, ["remote", "get-url", "origin"]);
   return r.ok && r.out ? r.out : undefined;
 }
@@ -49,7 +49,7 @@ export function workspaceOrigin(dest: string): string | undefined {
  * exists it is left untouched (no git runs) and reported as skipped. Never throws;
  * a git failure is returned as `{ ok:false, error }` with no secret-bearing output.
  */
-export function cloneWorkspace(repo: string, dest: string, branch?: string): CloneResult {
+export function cloneContextRepo(repo: string, dest: string, branch?: string): CloneResult {
   if (existsSync(dest)) {
     return { ok: false, dest, skipped: `${dest} already exists — left untouched` };
   }
@@ -63,7 +63,7 @@ export function cloneWorkspace(repo: string, dest: string, branch?: string): Clo
   }
 }
 
-export type WorkspaceState =
+export type ContextRepoState =
   | "absent"        // dest doesn't exist → clone
   | "not-git"       // exists but isn't a git repo → leave alone, report
   | "up-to-date"    // git repo, nothing new upstream
@@ -73,8 +73,8 @@ export type WorkspaceState =
   | "no-upstream"   // no tracking branch to compare against → report
   | "unknown";      // a git command failed unexpectedly → report
 
-export interface WorkspaceStatus {
-  state: WorkspaceState;
+export interface ContextRepoStatus {
+  state: ContextRepoState;
   behind?: number;
   ahead?: number;
   dirty?: boolean;
@@ -94,12 +94,12 @@ function git(dest: string, args: string[]): { ok: boolean; out: string } {
 }
 
 /**
- * Inspect an existing workspace clone against its upstream — the "check the diff,
+ * Inspect an existing context repo clone against its upstream — the "check the diff,
  * not just whether it's there" the setup wizard needs. Best-effort `git fetch`
  * (offline-tolerant), then compares HEAD to its tracking branch and reports whether
  * a fast-forward pull is safe. Read-only; never mutates the checkout. `node:` only.
  */
-export function workspaceStatus(dest: string): WorkspaceStatus {
+export function contextRepoStatus(dest: string): ContextRepoStatus {
   if (!existsSync(dest)) return { state: "absent" };
   if (!existsSync(join(dest, ".git"))) return { state: "not-git" };
 
@@ -122,11 +122,11 @@ export function workspaceStatus(dest: string): WorkspaceStatus {
 }
 
 /**
- * Fast-forward the workspace to its upstream with `git pull --ff-only`. The `--ff-only`
+ * Fast-forward the context repo to its upstream with `git pull --ff-only`. The `--ff-only`
  * guarantees this never creates a merge commit or clobbers local work: if it can't
- * fast-forward it fails cleanly. Only call when `workspaceStatus` reported `behind-clean`.
+ * fast-forward it fails cleanly. Only call when `contextRepoStatus` reported `behind-clean`.
  */
-export function pullWorkspace(dest: string): { ok: boolean; error?: string } {
+export function pullContextRepo(dest: string): { ok: boolean; error?: string } {
   try {
     execFileSync("git", ["-C", dest, "pull", "--ff-only"], { stdio: "inherit", env: process.env });
     return { ok: true };

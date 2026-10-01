@@ -13,7 +13,7 @@ import type {
   EmbeddedSkill,
   Marketplace,
   Source,
-  Workspace,
+  ContextRepo,
 } from "../src/types";
 
 // cli/scripts/embed-payload.ts -> cli/ -> repo root. The skills live in the
@@ -56,10 +56,10 @@ function readSkills(): EmbeddedSkill[] {
   return skills;
 }
 
-function readSources(): { marketplaces: Marketplace[]; sources: Source[]; workspace?: Workspace } {
+function readSources(): { marketplaces: Marketplace[]; sources: Source[]; contextRepo?: ContextRepo } {
   const raw = readFileSync(join(cliDir, "sources.json"), "utf8");
-  const parsed = JSON.parse(raw) as { marketplaces: Marketplace[]; sources: Source[]; workspace?: Workspace };
-  return { marketplaces: parsed.marketplaces, sources: parsed.sources, workspace: parsed.workspace };
+  const parsed = JSON.parse(raw) as { marketplaces: Marketplace[]; sources: Source[]; contextRepo?: ContextRepo };
+  return { marketplaces: parsed.marketplaces, sources: parsed.sources, contextRepo: parsed.contextRepo };
 }
 
 function readVersion(): string {
@@ -67,13 +67,13 @@ function readVersion(): string {
   return (JSON.parse(raw) as { version: string }).version;
 }
 
-const { marketplaces, sources, workspace } = readSources();
+const { marketplaces, sources, contextRepo } = readSources();
 const payload: EmbeddedPayload = {
   version: readVersion(),
   skills: readSkills(),
   marketplaces,
   sources,
-  ...(workspace ? { workspace } : {}),
+  ...(contextRepo ? { contextRepo } : {}),
 };
 
 const banner =

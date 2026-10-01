@@ -1,10 +1,10 @@
 # TRANSITIONAL — delete this file (and the CONTEXT_DEPLOY_KEY secret/deploy key) when
-# ner-jarvis-context is archived. v0.1.3+ clones the ws/context branch instead; this
-# only keeps v0.1.0–v0.1.2 members' workspaces current until they upgrade.
+# ner-jarvis-context is archived. v0.1.3+ clones the context-repo branch instead; this
+# only keeps v0.1.0–v0.1.2 members' clones current until they upgrade.
 #
 # Publishes context/ to Northeastern-Electric-Racing/ner-jarvis-context as that
 # repo's root (a `git subtree split`), so `ner-jarvis open` can clone just the
-# member workspace. ner-jarvis-context is a read-only mirror — edit context/ here.
+# member context. ner-jarvis-context is a read-only mirror — edit context/ here.
 #
 # Needs the CONTEXT_DEPLOY_KEY secret: the private half of a write-enabled
 # deploy key on ner-jarvis-context.

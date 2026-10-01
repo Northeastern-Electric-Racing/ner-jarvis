@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { resolveWorkspaceDest, cloneWorkspace, openClaude, workspaceStatus, pullWorkspace, repoSlug } from "./workspace";
+import { resolveContextRepoDest, cloneContextRepo, openClaude, contextRepoStatus, pullContextRepo, repoSlug } from "./context-repo";
 import { writeShim } from "../../test/helpers";
 
 const temps: string[] = [];
@@ -16,11 +16,11 @@ afterEach(() => {
   while (temps.length) rmSync(temps.pop()!, { recursive: true, force: true });
 });
 
-test("resolveWorkspaceDest joins base + dirName", () => {
-  expect(resolveWorkspaceDest("/a/b", "ner-jarvis")).toBe(join("/a/b", "ner-jarvis"));
+test("resolveContextRepoDest joins base + dirName", () => {
+  expect(resolveContextRepoDest("/a/b", "ner-jarvis")).toBe(join("/a/b", "ner-jarvis"));
 });
 
-test("cloneWorkspace clones a local repo into <dest> (offline)", () => {
+test("cloneContextRepo clones a local repo into <dest> (offline)", () => {
   const src = tmp("nerj-src-");
   execFileSync("git", ["init", "-q", src], { env: process.env });
   writeFileSync(join(src, "README.md"), "hi");
@@ -31,21 +31,21 @@ test("cloneWorkspace clones a local repo into <dest> (offline)", () => {
     { env: process.env },
   );
 
-  const dest = resolveWorkspaceDest(tmp("nerj-dest-"), "clone");
-  const r = cloneWorkspace(src, dest);
+  const dest = resolveContextRepoDest(tmp("nerj-dest-"), "clone");
+  const r = cloneContextRepo(src, dest);
   expect(r.ok).toBe(true);
   expect(existsSync(join(dest, "README.md"))).toBe(true);
 });
 
-test("cloneWorkspace refuses when dest already exists (runs no git)", () => {
-  const dest = resolveWorkspaceDest(tmp("nerj-dest2-"), "clone");
+test("cloneContextRepo refuses when dest already exists (runs no git)", () => {
+  const dest = resolveContextRepoDest(tmp("nerj-dest2-"), "clone");
   mkdirSync(dest, { recursive: true }); // pre-existing; no subprocess needed
-  const r = cloneWorkspace("/definitely/not/a/repo.git", dest);
+  const r = cloneContextRepo("/definitely/not/a/repo.git", dest);
   expect(r.ok).toBe(false);
   expect(r.skipped).toBeDefined();
 });
 
-// --- workspaceStatus / pullWorkspace (real local git, offline) ---------------
+// --- contextRepoStatus / pullContextRepo (real local git, offline) ---------------
 
 /** Run a git command in `cwd` with a canned identity, output silenced. */
 function gitC(cwd: string, ...args: string[]): void {
@@ -61,7 +61,7 @@ function srcAndClone(): { src: string; clone: string } {
   writeFileSync(join(src, "README.md"), "v1");
   gitC(src, "add", "-A");
   gitC(src, "commit", "-q", "-m", "init");
-  const clone = resolveWorkspaceDest(tmp("nerj-wdest-"), "clone");
+  const clone = resolveContextRepoDest(tmp("nerj-wdest-"), "clone");
   execFileSync("git", ["clone", "-q", src, clone], { env: process.env });
   return { src, clone };
 }
@@ -72,52 +72,52 @@ function advance(src: string): void {
   gitC(src, "commit", "-q", "-m", "second");
 }
 
-test("workspaceStatus: a path that doesn't exist → absent", () => {
-  expect(workspaceStatus(join(tmp("nerj-abs-"), "nope")).state).toBe("absent");
+test("contextRepoStatus: a path that doesn't exist → absent", () => {
+  expect(contextRepoStatus(join(tmp("nerj-abs-"), "nope")).state).toBe("absent");
 });
 
-test("workspaceStatus: an existing non-git directory → not-git", () => {
-  expect(workspaceStatus(tmp("nerj-plain-")).state).toBe("not-git");
+test("contextRepoStatus: an existing non-git directory → not-git", () => {
+  expect(contextRepoStatus(tmp("nerj-plain-")).state).toBe("not-git");
 });
 
-test("workspaceStatus: a fresh clone with nothing new upstream → up-to-date", () => {
+test("contextRepoStatus: a fresh clone with nothing new upstream → up-to-date", () => {
   const { clone } = srcAndClone();
-  expect(workspaceStatus(clone).state).toBe("up-to-date");
+  expect(contextRepoStatus(clone).state).toBe("up-to-date");
 });
 
-test("workspaceStatus: origin advanced, working tree clean → behind-clean with a count", () => {
+test("contextRepoStatus: origin advanced, working tree clean → behind-clean with a count", () => {
   const { src, clone } = srcAndClone();
   advance(src);
-  const st = workspaceStatus(clone);
+  const st = contextRepoStatus(clone);
   expect(st.state).toBe("behind-clean");
   expect(st.behind).toBe(1);
 });
 
-test("workspaceStatus: behind origin but with local uncommitted edits → behind-dirty (never pull)", () => {
+test("contextRepoStatus: behind origin but with local uncommitted edits → behind-dirty (never pull)", () => {
   const { src, clone } = srcAndClone();
   advance(src);
   writeFileSync(join(clone, "README.md"), "local edit"); // dirty the tracked file
-  const st = workspaceStatus(clone);
+  const st = contextRepoStatus(clone);
   expect(st.state).toBe("behind-dirty");
   expect(st.dirty).toBe(true);
 });
 
-test("workspaceStatus: a git repo with no upstream branch → no-upstream", () => {
+test("contextRepoStatus: a git repo with no upstream branch → no-upstream", () => {
   const solo = tmp("nerj-solo-");
   execFileSync("git", ["init", "-q", solo], { env: process.env });
   writeFileSync(join(solo, "f.txt"), "x");
   gitC(solo, "add", "-A");
   gitC(solo, "commit", "-q", "-m", "init");
-  expect(workspaceStatus(solo).state).toBe("no-upstream");
+  expect(contextRepoStatus(solo).state).toBe("no-upstream");
 });
 
-test("pullWorkspace: fast-forwards a behind-clean clone and updates files", () => {
+test("pullContextRepo: fast-forwards a behind-clean clone and updates files", () => {
   const { src, clone } = srcAndClone();
   advance(src);
-  const r = pullWorkspace(clone);
+  const r = pullContextRepo(clone);
   expect(r.ok).toBe(true);
   expect(readFileSync(join(clone, "README.md"), "utf8")).toBe("v2");
-  expect(workspaceStatus(clone).state).toBe("up-to-date"); // no longer behind
+  expect(contextRepoStatus(clone).state).toBe("up-to-date"); // no longer behind
 });
 
 test("openClaude launches the claude bin with cwd = the given dir", () => {

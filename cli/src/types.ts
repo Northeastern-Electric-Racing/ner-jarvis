@@ -24,10 +24,10 @@ export interface EmbeddedSkill {
   files: { path: string; contents: string }[];
 }
 
-export interface Workspace {
+export interface ContextRepo {
   repo: string;    // git URL to clone (non-secret)
   dirName: string; // directory name to clone into under the chosen base dir
-  branch?: string; // clone only this branch (e.g. ws/context, whose root is the workspace folder)
+  branch?: string; // clone only this branch (e.g. context-repo, whose root is the context/ folder)
 }
 
 export interface EmbeddedPayload {
@@ -35,7 +35,7 @@ export interface EmbeddedPayload {
   skills: EmbeddedSkill[];
   marketplaces: Marketplace[];
   sources: Source[];
-  workspace?: Workspace; // optional: a repo to clone + open in Claude Code during setup
+  contextRepo?: ContextRepo; // optional: a repo to clone + open in Claude Code during setup
 }
 
 // loader returns the validated embedded payload

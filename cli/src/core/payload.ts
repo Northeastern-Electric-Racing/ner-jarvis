@@ -42,16 +42,16 @@ export function validatePayload(p: EmbeddedPayload): EmbeddedPayload {
     }
   }
 
-  if (p.workspace !== undefined) {
-    const w = p.workspace as { repo?: unknown; dirName?: unknown; branch?: unknown };
+  if (p.contextRepo !== undefined) {
+    const w = p.contextRepo as { repo?: unknown; dirName?: unknown; branch?: unknown };
     if (typeof w.repo !== "string" || !w.repo) {
-      throw new Error(`Invalid workspace: missing non-empty "repo".`);
+      throw new Error(`Invalid contextRepo: missing non-empty "repo".`);
     }
     if (typeof w.dirName !== "string" || !w.dirName) {
-      throw new Error(`Invalid workspace: missing non-empty "dirName".`);
+      throw new Error(`Invalid contextRepo: missing non-empty "dirName".`);
     }
     if (w.branch !== undefined && (typeof w.branch !== "string" || !w.branch)) {
-      throw new Error(`Invalid workspace: "branch" must be a non-empty string.`);
+      throw new Error(`Invalid contextRepo: "branch" must be a non-empty string.`);
     }
   }
 

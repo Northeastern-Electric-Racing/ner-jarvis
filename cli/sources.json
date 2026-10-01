@@ -19,9 +19,9 @@
       "plugin": "atlassian"
     }
   ],
-  "workspace": {
+  "contextRepo": {
     "repo": "https://github.com/Northeastern-Electric-Racing/ner-jarvis.git",
-    "dirName": "ner-context",
-    "branch": "ws/context"
+    "dirName": "ner-context-repo",
+    "branch": "context-repo"
   }
 }

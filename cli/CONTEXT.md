@@ -16,10 +16,10 @@ A data connection the skills depend on, declared in `cli/sources.json`. Slack an
 Atlassian are Claude Code plugins. GitHub is reached through the `gh` CLI, so it isn't
 installed as a source.
 
-**Workspace**:
-The `ws/context` branch of `ner-jarvis`, whose root is the `context/` folder. `ner-jarvis
-open` clones only that branch (into `ner-context/`) and opens Claude Code there.
-_Avoid_: context repo (the old `ner-jarvis-context` mirror is retired)
+**Context repo**:
+The `context-repo` branch of `ner-jarvis`, whose root is the `context/` folder. `ner-jarvis
+open` clones only that branch (into `ner-context-repo/`) and opens Claude Code there.
+_Avoid_: workspace; `ner-jarvis-context` (the retired mirror repo)
 
 **Onboardee**:
 A new NER software-team member working through their first contributions. The persona
