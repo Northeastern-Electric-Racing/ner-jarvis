@@ -7,7 +7,7 @@ import type { StaleReport, StaleSent, StaleTargetKind, StaleVerdict } from "../t
 export const CURRENT_STALE_SCHEMA_VERSION = 1;
 
 /**
- * The 8-dimension staleness rubric from `docs/onboarding-staleness.md`, reused verbatim
+ * The 8-dimension staleness rubric from `cli/docs/staleness-rubric.md`, reused verbatim
  * so a member's report lands in the same bucket as the maintainer audits and the two
  * lists can merge without a translation step.
  */

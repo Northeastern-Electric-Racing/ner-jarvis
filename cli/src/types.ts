@@ -124,7 +124,7 @@ export interface UndoIndex {
 // --- Stale-doc reports ---------------------------------------------------
 // A member's record of a doc that misled them. Local-first: the file never leaves
 // the machine unless they run `stale export`. See core/stale.ts for the definition
-// of "stale" (relational, not chronological) and docs/onboarding-staleness.md for
+// of "stale" (relational, not chronological) and cli/docs/staleness-rubric.md for
 // the 8-dimension rubric the `dimension` field indexes.
 
 /** Where the misleading content lives. */
@@ -145,7 +145,7 @@ export interface StaleReport {
   ts: string;
   toolVersion: string;
   verdict: StaleVerdict;
-  /** 1-8, indexing the rubric in docs/onboarding-staleness.md. */
+  /** 1-8, indexing the rubric in cli/docs/staleness-rubric.md. */
   dimension: number;
   target: { kind: StaleTargetKind; url: string; title: string };
   /** The newer page that supersedes this one. Only meaningful when verdict is "superseded". */
