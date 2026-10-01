@@ -6,8 +6,12 @@
 member goes from a fresh `~/.claude` to a working setup in a single step.
 
 > A CLI scoped to App Software, made to accelerate onboarding and surface shared
-> development bugs quickly. The skills it ships live in this repo's
-> [`skills/`](skills/); the CLI embeds them at build time.
+> development bugs quickly.
+
+| Folder | What's in it |
+|---|---|
+| [`context/`](context/) | Everything a member needs to ask questions about NER: `CLAUDE.md`, the NER [`skills/`](context/skills/) (including the roster), and the "Start here" README. Published as [`ner-jarvis-context`](https://github.com/Northeastern-Electric-Racing/ner-jarvis-context), which `ner-jarvis open` clones. |
+| [`cli/`](cli/) | The `ner-jarvis` installer. Its build embeds `context/skills/`. |
 
 ## What it installs
 
@@ -15,7 +19,7 @@ Into `~/.claude/skills/`, six NER skills:
 
 | skill | what it does |
 |---|---|
-| `ner-onboard` | walks a new member through getting started |
+| `ner-onboard` | walks a new member through getting started — run it as `/ner-onboard` (never auto-loaded) |
 | `ner-ask` | answers NER software questions from Confluence + GitHub |
 | `ner-setup` | environment / dev-setup help |
 | `ner-repo-explainer` | explains what a given NER repo does |
@@ -63,7 +67,7 @@ Anthropic's official installer.
 case "$(uname -s)" in Darwin) os=darwin;; Linux) os=linux;; *) echo "unsupported"; exit 1;; esac
 case "$(uname -m)" in arm64|aarch64) arch=arm64;; x86_64|amd64) arch=x64;; *) echo "unsupported"; exit 1;; esac
 curl -fsSL -o ner-jarvis \
-  "https://github.com/Northeastern-Electric-Racing/ner-jarvis-cli/releases/latest/download/ner-jarvis-bun-$os-$arch"
+  "https://github.com/Northeastern-Electric-Racing/ner-jarvis/releases/latest/download/ner-jarvis-bun-$os-$arch"
 chmod +x ner-jarvis && ./ner-jarvis
 ```
 
@@ -74,7 +78,7 @@ To keep it on your `PATH` instead of the current folder, swap the last line for
 
 ```powershell
 Invoke-WebRequest -OutFile ner-jarvis.exe `
-  "https://github.com/Northeastern-Electric-Racing/ner-jarvis-cli/releases/latest/download/ner-jarvis-bun-windows-x64.exe"
+  "https://github.com/Northeastern-Electric-Racing/ner-jarvis/releases/latest/download/ner-jarvis-bun-windows-x64.exe"
 .\ner-jarvis.exe
 ```
 
@@ -126,6 +130,7 @@ self-contained.
 ```sh
 ner-jarvis                   # setup: install all skills + connect all sources (default)
 ner-jarvis setup slack       # targeted: act only on the named skill/source
+ner-jarvis open              # clone/refresh the context workspace, open Claude Code in it
 ner-jarvis update            # re-apply the latest embedded payload
 ner-jarvis doctor            # read-only health check (non-zero exit if anything's off)
 ner-jarvis uninstall         # remove only what ner-jarvis installed
@@ -187,15 +192,20 @@ or unhealthy.
 ## Development
 
 ```sh
+cd cli
 bun install
-bun run embed    # regenerate the embedded payload from skills/ + sources.json
+bun run embed    # regenerate the embedded payload from ../context/skills + sources.json
 bun test
 ```
 
-- The NER skills live at [`skills/`](skills/) and are **embedded at
-  build time** (via `bun run embed`) — there's no runtime fetch.
-- Data sources are declared in [`sources.json`](sources.json).
-- [`behavior.md`](behavior.md) is the **language-agnostic contract** — the
+- The NER skills live at [`context/skills/`](context/skills/) and are **embedded
+  at build time** (via `bun run embed`) — there's no runtime fetch.
+- Data sources are declared in [`cli/sources.json`](cli/sources.json).
+- On push to `main`, `.github/workflows/publish-context.yml` subtree-splits
+  `context/` to `ner-jarvis-context` (a read-only mirror — never commit there).
+  Its README's "Start here" table is generated from each subteam's `onboarding`
+  field in `roster.json`: `bun run sync:context` in `cli/` (CI runs `--check`).
+- [`cli/behavior.md`](cli/behavior.md) is the **language-agnostic contract** — the
   authoritative spec for command surface, wizard steps, state shape,
   reconciliation rules, and exit codes. Read it before porting ner-jarvis to
   another runtime.

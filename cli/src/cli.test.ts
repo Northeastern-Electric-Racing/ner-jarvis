@@ -85,3 +85,8 @@ test("stale is a known command and --key=value lands in options", () => {
 test("an option value containing '=' keeps everything after the first one", () => {
   expect(parseArgs(["stale", "--url=https://x/?a=1&b=2"]).options.url).toBe("https://x/?a=1&b=2");
 });
+
+test("parseArgs recognizes `open`", () => {
+  expect(parseArgs(["open"]).command).toBe("open");
+  expect(parseArgs(["open", "--dry-run"]).dryRun).toBe(true);
+});

@@ -72,7 +72,7 @@ export interface ClaudeView {
 }
 
 export interface ParsedArgs {
-  command: "setup" | "update" | "doctor" | "uninstall" | "undo" | "roster" | "stale" | "version" | "help";
+  command: "setup" | "update" | "doctor" | "uninstall" | "undo" | "roster" | "stale" | "open" | "version" | "help";
   targets: string[]; force: boolean; dryRun: boolean; yes: boolean; list: boolean;
   json: boolean;
   /** Free-form `--key=value` / bare `--key` flags, for commands that need values. */

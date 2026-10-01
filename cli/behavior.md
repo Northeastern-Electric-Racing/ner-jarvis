@@ -146,6 +146,13 @@ sources (slack, atlassian) authenticate on first use.
     a supplied `--successor` means `superseded`, its absence means `orphan-current`.
     Purely historical content is not stale and is never recorded — see "Stale-doc
     reports" below.
+- `ner-jarvis open` — get into the context workspace in one step. Uses the path
+  recorded in `~/.claude/ner-jarvis/workspace.json` (written by `setup` and `open`),
+  or asks for a parent directory and appends `workspace.dirName`. Then: absent →
+  clone `workspace.repo`; behind origin **and** clean → `git pull --ff-only` without
+  prompting; any other git state → report it and open as-is (never pulls over local
+  work). Finally launches Claude Code there. A failed clone opens nothing and exits
+  non-zero. `--dry-run` touches nothing.
 - Flags: `--yes`/`-y` (assume "yes" to every prompt — a non-interactive full run),
   `--force` (overwrite items we installed but the user has since edited),
   `--dry-run` (preview; write nothing), `--list` (`undo`: list recorded runs instead

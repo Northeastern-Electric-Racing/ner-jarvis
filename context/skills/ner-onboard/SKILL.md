@@ -1,6 +1,7 @@
 ---
 name: ner-onboard
 description: Orient a new Northeastern Electric Racing (NER) software-team member — pick their Track, point them at the right onboarding docs, and help them find a first contribution — all grounded in live Confluence and GitHub. Use when someone is new to NER software, just joined, is starting onboarding, or asks "how do I get started" / "what do I do first".
+disable-model-invocation: true
 ---
 
 # Onboard a new NER software member
@@ -39,6 +40,10 @@ and cite every pointer as a clickable link.
    Confluence pages (environment setup, contributor guide, learning resources,
    starter-ticket instructions), link them, and summarize what they say now —
    don't paraphrase a page you haven't read this session.
+   **Start with the Track's `onboarding` pages in the roster** (`start`, plus `faq`
+   if listed) — a subteam lists them there once it has a maintained start-here page.
+   Read `start` this session and walk them through it. If the Track has no
+   `onboarding` entry yet, search Confluence as below.
    **Prefer a maintained page over a nominally-correct one.** Some tracks have a
    recently-edited landing page and some have one that has sat untouched for two
    years; check when a page was last updated and lead with the live one. If the
